@@ -35,14 +35,21 @@ const today = new Date().toISOString().slice(0, 10);
             session ready.
           </p>
 
+          <button class="provider-pill" type="button" data-admin-reset-form>
+            new entry
+          </button>
+
           <button class="provider-pill" type="button" data-admin-logout>
             lock
           </button>
         </div>
 
         <form class="admin-form" data-admin-form>
+          <input type="hidden" name="originalPath" value="" />
+          <input type="hidden" name="existingCoverImage" value="" />
+
           <div class="admin-summary">
-            <p class="admin-summary-label">entry path</p>
+            <p class="admin-summary-label" data-admin-mode-label>new entry</p>
             <p class="admin-summary-value" data-admin-entry-url>
               /journal/{today}-untitled/
             </p>
@@ -94,6 +101,11 @@ const today = new Date().toISOString().slice(0, 10);
               cover preview
             </figcaption>
           </figure>
+
+          <label class="admin-checkbox">
+            <input type="checkbox" name="removeCoverImage" value="true" />
+            <span>remove current cover image</span>
+          </label>
 
           <div class="admin-grid">
             <label>
@@ -168,6 +180,19 @@ const today = new Date().toISOString().slice(0, 10);
             </div>
           </article>
         </section>
+
+        <section class="admin-library" aria-labelledby="admin-library-title">
+          <div class="section-head">
+            <h2 id="admin-library-title" class="screen-title">EXISTING ENTRIES</h2>
+            <p class="muted admin-note" data-admin-library-note>
+              tap an entry to edit or delete
+            </p>
+          </div>
+
+          <div class="admin-entry-list" data-admin-entry-list>
+            <p class="terminal-line">loading entries...</p>
+          </div>
+        </section>
       </div>
     </div>
   </section>
@@ -181,6 +206,7 @@ const today = new Date().toISOString().slice(0, 10);
     const passwordInput = document.querySelector("#admin-password");
     const loginButton = document.querySelector("[data-admin-login]");
     const logoutButton = document.querySelector("[data-admin-logout]");
+    const resetFormButton = document.querySelector("[data-admin-reset-form]");
     const form = document.querySelector("[data-admin-form]");
     const feedback = document.querySelector("[data-admin-feedback]");
     const status = document.querySelector("[data-admin-status]");
@@ -198,15 +224,21 @@ const today = new Date().toISOString().slice(0, 10);
     const publishResult = document.querySelector("[data-admin-publish-result]");
     const liveLink = document.querySelector("[data-admin-live-link]");
     const draftNote = document.querySelector("[data-admin-draft-note]");
+    const modeLabel = document.querySelector("[data-admin-mode-label]");
+    const listContainer = document.querySelector("[data-admin-entry-list]");
+    const libraryNote = document.querySelector("[data-admin-library-note]");
 
     if (!form) return;
 
     const fields = {
+      originalPath: form.querySelector('[name="originalPath"]'),
+      existingCoverImage: form.querySelector('[name="existingCoverImage"]'),
       title: form.querySelector('[name="title"]'),
       date: form.querySelector('[name="date"]'),
       description: form.querySelector('[name="description"]'),
       tags: form.querySelector('[name="tags"]'),
       image: form.querySelector('[name="image"]'),
+      removeCoverImage: form.querySelector('[name="removeCoverImage"]'),
       coverAlt: form.querySelector('[name="coverAlt"]'),
       coverCaption: form.querySelector('[name="coverCaption"]'),
       body: form.querySelector('[name="body"]'),
@@ -214,6 +246,9 @@ const today = new Date().toISOString().slice(0, 10);
     };
 
     let currentImageUrl = "";
+    let currentRemoteImage = "";
+    let entries = [];
+    let suppressDraftWrite = false;
 
     function setMessage(message, isError = false) {
       if (!feedback) return;
@@ -241,7 +276,7 @@ const today = new Date().toISOString().slice(0, 10);
     }
 
     function escapeHtml(value) {
-      return value
+      return (value || "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
@@ -256,27 +291,24 @@ const today = new Date().toISOString().slice(0, 10);
 
       const blocks = trimmed.split(/\n{2,}/).map((block) => block.trim()).filter(Boolean);
 
-      return blocks.map((block) => {
-        if (block.startsWith("### ")) {
-          return `<h4>${escapeHtml(block.slice(4))}</h4>`;
-        }
-        if (block.startsWith("## ")) {
-          return `<h3>${escapeHtml(block.slice(3))}</h3>`;
-        }
-        if (block.startsWith("# ")) {
-          return `<h2>${escapeHtml(block.slice(2))}</h2>`;
-        }
-        if (block.startsWith("> ")) {
-          const lines = block
-            .split("\n")
-            .map((line) => line.replace(/^>\s?/, "").trim())
-            .filter(Boolean)
-            .map((line) => `<p>${escapeHtml(line)}</p>`)
-            .join("");
-          return `<blockquote>${lines}</blockquote>`;
-        }
-        return `<p>${escapeHtml(block).replace(/\n/g, "<br />")}</p>`;
-      }).join("");
+      return blocks
+        .map((block) => {
+          if (block.startsWith("### ")) return `<h4>${escapeHtml(block.slice(4))}</h4>`;
+          if (block.startsWith("## ")) return `<h3>${escapeHtml(block.slice(3))}</h3>`;
+          if (block.startsWith("# ")) return `<h2>${escapeHtml(block.slice(2))}</h2>`;
+          if (block.startsWith("> ")) {
+            const lines = block
+              .split("\n")
+              .map((line) => line.replace(/^>\s?/, "").trim())
+              .filter(Boolean)
+              .map((line) => `<p>${escapeHtml(line)}</p>`)
+              .join("");
+            return `<blockquote>${lines}</blockquote>`;
+          }
+
+          return `<p>${escapeHtml(block).replace(/\n/g, "<br />")}</p>`;
+        })
+        .join("");
     }
 
     function countWords(value) {
@@ -284,8 +316,10 @@ const today = new Date().toISOString().slice(0, 10);
       return matches ? matches.length : 0;
     }
 
-    function saveDraft() {
-      const snapshot = {
+    function getDraftSnapshot() {
+      return {
+        originalPath: fields.originalPath.value,
+        existingCoverImage: fields.existingCoverImage.value,
         title: fields.title.value,
         date: fields.date.value,
         description: fields.description.value,
@@ -293,10 +327,14 @@ const today = new Date().toISOString().slice(0, 10);
         coverAlt: fields.coverAlt.value,
         coverCaption: fields.coverCaption.value,
         body: fields.body.value,
-        draft: Boolean(fields.draft.checked)
+        draft: Boolean(fields.draft.checked),
+        removeCoverImage: Boolean(fields.removeCoverImage.checked)
       };
+    }
 
-      localStorage.setItem(storageKey, JSON.stringify(snapshot));
+    function saveDraft() {
+      if (suppressDraftWrite) return;
+      localStorage.setItem(storageKey, JSON.stringify(getDraftSnapshot()));
       if (draftNote) {
         draftNote.textContent = "local draft saved on this device";
       }
@@ -308,6 +346,8 @@ const today = new Date().toISOString().slice(0, 10);
 
       try {
         const snapshot = JSON.parse(raw);
+        fields.originalPath.value = snapshot.originalPath || "";
+        fields.existingCoverImage.value = snapshot.existingCoverImage || "";
         fields.title.value = snapshot.title || "";
         fields.date.value = snapshot.date || fields.date.value;
         fields.description.value = snapshot.description || "";
@@ -316,6 +356,8 @@ const today = new Date().toISOString().slice(0, 10);
         fields.coverCaption.value = snapshot.coverCaption || "";
         fields.body.value = snapshot.body || "";
         fields.draft.checked = Boolean(snapshot.draft);
+        fields.removeCoverImage.checked = Boolean(snapshot.removeCoverImage);
+        currentRemoteImage = fields.existingCoverImage.value || "";
         if (draftNote) {
           draftNote.textContent = "restored local draft from this device";
         }
@@ -324,26 +366,54 @@ const today = new Date().toISOString().slice(0, 10);
       }
     }
 
-    function clearDraft() {
-      localStorage.removeItem(storageKey);
+    function resetFormState(preservePublishResult = false) {
+      suppressDraftWrite = true;
       form.reset();
+      fields.originalPath.value = "";
+      fields.existingCoverImage.value = "";
       fields.date.value = new Date().toISOString().slice(0, 10);
+      fields.removeCoverImage.checked = false;
+      currentRemoteImage = "";
+      publishResult.hidden = preservePublishResult ? publishResult.hidden : true;
       if (currentImageUrl) {
         URL.revokeObjectURL(currentImageUrl);
         currentImageUrl = "";
       }
       previewImage.hidden = true;
-      publishResult.hidden = true;
+      submitButton.textContent = "publish";
+      if (modeLabel) {
+        modeLabel.textContent = "new entry";
+      }
+      suppressDraftWrite = false;
+    }
+
+    function clearDraft() {
+      localStorage.removeItem(storageKey);
+      resetFormState();
+      updatePreview();
       if (draftNote) {
         draftNote.textContent = "local draft cleared";
       }
-      updatePreview();
       setMessage("local draft cleared.");
     }
 
     function updateImagePreview() {
       const file = fields.image.files?.[0];
-      if (!file) {
+
+      if (file) {
+        if (currentImageUrl) {
+          URL.revokeObjectURL(currentImageUrl);
+        }
+
+        currentImageUrl = URL.createObjectURL(file);
+        previewImageImg.src = currentImageUrl;
+        previewImageImg.alt = fields.coverAlt.value || fields.title.value || "cover preview";
+        previewImageCaption.textContent = fields.coverCaption.value || file.name;
+        previewImage.hidden = false;
+        return;
+      }
+
+      if (fields.removeCoverImage.checked || !currentRemoteImage) {
         if (currentImageUrl) {
           URL.revokeObjectURL(currentImageUrl);
           currentImageUrl = "";
@@ -352,24 +422,20 @@ const today = new Date().toISOString().slice(0, 10);
         return;
       }
 
-      if (currentImageUrl) {
-        URL.revokeObjectURL(currentImageUrl);
-      }
-
-      currentImageUrl = URL.createObjectURL(file);
-      previewImageImg.src = currentImageUrl;
+      previewImageImg.src = currentRemoteImage;
       previewImageImg.alt = fields.coverAlt.value || fields.title.value || "cover preview";
-      previewImageCaption.textContent = fields.coverCaption.value || file.name;
+      previewImageCaption.textContent = fields.coverCaption.value || "current cover image";
       previewImage.hidden = false;
     }
 
-    function updatePreview() {
+    function updatePreview(skipDraftSave = false) {
       const title = fields.title.value.trim() || "Untitled";
       const date = fields.date.value || new Date().toISOString().slice(0, 10);
       const description = fields.description.value.trim() || "short deck will appear here.";
       const slug = slugify(fields.title.value.trim() || "untitled");
       const body = fields.body.value;
       const words = countWords(body);
+      const isEditing = Boolean(fields.originalPath.value);
 
       entryUrl.textContent = `/journal/${date}-${slug}/`;
       wordCount.textContent = `${words} word${words === 1 ? "" : "s"}`;
@@ -377,14 +443,114 @@ const today = new Date().toISOString().slice(0, 10);
       previewTitle.textContent = title;
       previewDescription.textContent = description;
       previewBody.innerHTML = renderMarkdownPreview(body);
+      submitButton.textContent = isEditing ? "update" : "publish";
+      if (modeLabel) {
+        modeLabel.textContent = isEditing ? `editing ${fields.originalPath.value.split("/").pop()}` : "new entry";
+      }
       updateImagePreview();
-      saveDraft();
+      if (!skipDraftSave) {
+        saveDraft();
+      }
+    }
+
+    function renderEntries() {
+      if (!listContainer) return;
+      if (entries.length === 0) {
+        listContainer.innerHTML = "<p class='terminal-line'>no entries found.</p>";
+        return;
+      }
+
+      listContainer.innerHTML = entries
+        .map((entry) => `
+          <article class="admin-entry-card">
+            <div class="admin-entry-copy">
+              <p class="entry-date">[${escapeHtml(entry.date)}]</p>
+              <h3 class="admin-entry-title">${escapeHtml(entry.title)}</h3>
+              <p class="admin-entry-meta">${escapeHtml(entry.filename)}</p>
+            </div>
+            <div class="admin-entry-actions">
+              <button class="provider-pill" type="button" data-edit-path="${escapeHtml(entry.path)}">edit</button>
+              <button class="provider-pill admin-danger" type="button" data-delete-path="${escapeHtml(entry.path)}">delete</button>
+            </div>
+          </article>
+        `)
+        .join("");
+    }
+
+    async function loadEntries() {
+      const response = await fetch("/api/admin/entries", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Could not load entries.");
+      }
+
+      entries = data.entries || [];
+      renderEntries();
+      if (libraryNote) {
+        libraryNote.textContent = `${entries.length} entries available`;
+      }
+    }
+
+    async function loadEntry(path) {
+      const response = await fetch(`/api/admin/entry?path=${encodeURIComponent(path)}`, {
+        cache: "no-store"
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Could not load entry.");
+      }
+
+      const entry = data.entry;
+      fields.originalPath.value = entry.path;
+      fields.existingCoverImage.value = entry.coverImage || "";
+      fields.title.value = entry.title || "";
+      fields.date.value = entry.date || fields.date.value;
+      fields.description.value = entry.description || "";
+      fields.tags.value = (entry.tags || []).join(", ");
+      fields.coverAlt.value = entry.coverAlt || "";
+      fields.coverCaption.value = entry.coverCaption || "";
+      fields.body.value = entry.body || "";
+      fields.draft.checked = Boolean(entry.draft);
+      fields.removeCoverImage.checked = false;
+      currentRemoteImage = entry.coverImage || "";
+      publishResult.hidden = true;
+      updatePreview();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function deleteEntry(path) {
+      const entry = entries.find((item) => item.path === path);
+      const title = entry?.title || path.split("/").pop();
+      if (!window.confirm(`Delete "${title}"?`)) return;
+
+      setMessage("deleting...");
+
+      const response = await fetch("/api/admin/entry", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ path })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Delete failed.");
+      }
+
+      if (fields.originalPath.value === path) {
+        clearDraft();
+      }
+
+      setMessage(`deleted: ${data.deleted}`);
+      await loadEntries();
     }
 
     async function refreshSession() {
       const response = await fetch("/api/admin/session", { cache: "no-store" });
       const data = await response.json();
       setSessionState(Boolean(data.authenticated));
+      if (data.authenticated) {
+        await loadEntries();
+      }
     }
 
     async function login() {
@@ -399,13 +565,13 @@ const today = new Date().toISOString().slice(0, 10);
         });
 
         const data = await response.json();
-
         if (!response.ok) {
           throw new Error(data.error || "Login failed.");
         }
 
         passwordInput.value = "";
         setSessionState(true);
+        await loadEntries();
       } catch (error) {
         setMessage(error.message || "Login failed.", true);
       } finally {
@@ -427,6 +593,7 @@ const today = new Date().toISOString().slice(0, 10);
       try {
         const formData = new FormData(form);
         formData.set("draft", formData.get("draft") ? "true" : "false");
+        formData.set("removeCoverImage", formData.get("removeCoverImage") ? "true" : "false");
 
         const response = await fetch("/api/admin/publish", {
           method: "POST",
@@ -434,7 +601,6 @@ const today = new Date().toISOString().slice(0, 10);
         });
 
         const data = await response.json();
-
         if (!response.ok) {
           throw new Error(data.error || "Publish failed.");
         }
@@ -447,18 +613,15 @@ const today = new Date().toISOString().slice(0, 10);
 
         localStorage.removeItem(storageKey);
         if (draftNote) {
-          draftNote.textContent = "published and cleared from local draft";
+          draftNote.textContent = data.mode === "update"
+            ? "updated and cleared from local draft"
+            : "published and cleared from local draft";
         }
 
-        form.reset();
-        fields.date.value = new Date().toISOString().slice(0, 10);
-        if (currentImageUrl) {
-          URL.revokeObjectURL(currentImageUrl);
-          currentImageUrl = "";
-        }
-        previewImage.hidden = true;
-        updatePreview();
-        setMessage(`published: ${data.filename}`);
+        resetFormState(true);
+        updatePreview(true);
+        await loadEntries();
+        setMessage(`${data.mode === "update" ? "updated" : "published"}: ${data.filename}`);
       } catch (error) {
         if (error.message === "Authentication required.") {
           setSessionState(false);
@@ -469,6 +632,25 @@ const today = new Date().toISOString().slice(0, 10);
       }
     }
 
+    listContainer?.addEventListener("click", async (event) => {
+      const target = event.target.closest("button");
+      if (!target) return;
+
+      try {
+        if (target.dataset.editPath) {
+          setMessage("loading entry...");
+          await loadEntry(target.dataset.editPath);
+          setMessage("entry loaded.");
+        }
+
+        if (target.dataset.deletePath) {
+          await deleteEntry(target.dataset.deletePath);
+        }
+      } catch (error) {
+        setMessage(error.message || "Action failed.", true);
+      }
+    });
+
     loginButton?.addEventListener("click", login);
     passwordInput?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -477,6 +659,11 @@ const today = new Date().toISOString().slice(0, 10);
       }
     });
     logoutButton?.addEventListener("click", logout);
+    resetFormButton?.addEventListener("click", () => {
+      resetFormState();
+      updatePreview();
+      setMessage("ready for a new entry.");
+    });
     form?.addEventListener("submit", publish);
     clearDraftButton?.addEventListener("click", clearDraft);
 

@@ -14,6 +14,9 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const coverImage = entry.data.coverImage ?? "";
+const shareUrl = new URL(entryUrl(entry), Astro.site ?? Astro.url).toString();
+const shareTitle = entryTitle(entry);
+const shareText = `${shareTitle} — sporadik.space`;
 ---
 
 <BaseLayout
@@ -21,6 +24,8 @@ const coverImage = entry.data.coverImage ?? "";
   description={entry.data.description || entryTitle(entry)}
   canonicalPath={entryUrl(entry)}
   type="article"
+  ogImage={coverImage || undefined}
+  ogImageAlt={entry.data.coverAlt || entryTitle(entry)}
 >
   <article class="terminal-block">
     <a href="/" class="terminal-link back-link">&lt; return to index</a>
@@ -46,16 +51,42 @@ const coverImage = entry.data.coverImage ?? "";
     <div class="post-body">
       <Content />
     </div>
+
+    <div class="post-share" aria-label="Share this entry">
+      <span class="post-share-label">share</span>
+      <a
+        class="post-share-link"
+        href={`https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        X
+      </a>
+      <a
+        class="post-share-link"
+        href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        Telegram
+      </a>
+      <a
+        class="post-share-link"
+        href={`https://wa.me/?text=${encodeURIComponent(`${shareTitle} ${shareUrl}`)}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        WhatsApp
+      </a>
+      <button class="post-share-link post-share-copy" type="button" data-copy-share={shareUrl}>
+        Copy
+      </button>
+    </div>
   </article>
 
   {
     coverImage && (
-      <script
-        is:inline
-        define:vars={{
-          coverImage
-        }}
-      >
+      <script is:inline define:vars={{ coverImage }}>
         (() => {
           const postBody = document.querySelector(".post-body");
           if (!postBody) return;
@@ -69,9 +100,9 @@ const coverImage = entry.data.coverImage ?? "";
           };
 
           const targetPath = normalize(coverImage);
-          const duplicateImage = Array.from(
-            postBody.querySelectorAll("img")
-          ).find((image) => normalize(image.getAttribute("src") ?? "") === targetPath);
+          const duplicateImage = Array.from(postBody.querySelectorAll("img")).find(
+            (image) => normalize(image.getAttribute("src") ?? "") === targetPath
+          );
 
           if (!duplicateImage) return;
 
@@ -87,4 +118,29 @@ const coverImage = entry.data.coverImage ?? "";
       </script>
     )
   }
+
+  <script is:inline>
+    (() => {
+      const copyButton = document.querySelector("[data-copy-share]");
+      if (!copyButton) return;
+
+      copyButton.addEventListener("click", async () => {
+        const shareUrl = copyButton.dataset.copyShare;
+        if (!shareUrl) return;
+
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          copyButton.textContent = "Copied";
+          window.setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1400);
+        } catch {
+          copyButton.textContent = "Failed";
+          window.setTimeout(() => {
+            copyButton.textContent = "Copy";
+          }, 1400);
+        }
+      });
+    })();
+  </script>
 </BaseLayout>

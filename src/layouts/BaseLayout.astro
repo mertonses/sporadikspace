@@ -10,6 +10,8 @@ interface Props {
   description?: string;
   canonicalPath?: string;
   type?: "website" | "article";
+  ogImage?: string;
+  ogImageAlt?: string;
 }
 
 const {
@@ -17,12 +19,14 @@ const {
   description = siteConfig.description,
   canonicalPath = Astro.url.pathname,
   type = "website",
+  ogImage,
+  ogImageAlt = `${siteConfig.title} paylaşım görseli`
 } = Astro.props;
 
 const siteOrigin = Astro.site ?? new URL(Astro.url.origin);
 
 const canonicalUrl = new URL(canonicalPath, siteOrigin);
-const ogImageUrl = new URL("/og.svg", siteOrigin);
+const ogImageUrl = new URL(ogImage || "/og.svg", siteOrigin);
 
 const pageTitle =
   title === siteConfig.title
@@ -34,16 +38,8 @@ const pageTitle =
 <html lang="tr" data-theme="system">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
-
-    <!--
-      Tema tercihini CSS yüklenmeden önce uygular.
-      Böylece sayfa açılırken yanlış tema parlaması azalır.
-    -->
     <script is:inline>
       (() => {
         const storageKey = "sporadikspace-theme";
@@ -51,11 +47,8 @@ const pageTitle =
 
         try {
           const savedTheme = localStorage.getItem(storageKey);
-
           document.documentElement.dataset.theme =
-            validThemes.includes(savedTheme)
-              ? savedTheme
-              : "system";
+            validThemes.includes(savedTheme) ? savedTheme : "system";
         } catch {
           document.documentElement.dataset.theme = "system";
         }
@@ -63,29 +56,12 @@ const pageTitle =
     </script>
 
     <title>{pageTitle}</title>
-
     <meta name="description" content={description} />
     <meta name="robots" content="index,follow" />
-
-    <meta
-      name="theme-color"
-      content="#e8e2d6"
-    />
-
+    <meta name="theme-color" content="#e8e2d6" />
     <link rel="canonical" href={canonicalUrl} />
-
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="/favicon.svg"
-    />
-
-    <link
-      rel="alternate"
-      type="application/rss+xml"
-      title={`${siteConfig.title} RSS`}
-      href="/rss.xml"
-    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${siteConfig.title} RSS`} href="/rss.xml" />
 
     <meta property="og:type" content={type} />
     <meta property="og:title" content={pageTitle} />
@@ -93,25 +69,13 @@ const pageTitle =
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content={siteConfig.title} />
     <meta property="og:image" content={ogImageUrl} />
-    <meta
-      property="og:image:alt"
-      content={`${siteConfig.title} paylaşım görseli`}
-    />
+    <meta property="og:image:alt" content={ogImageAlt} />
 
-    <meta
-      name="twitter:card"
-      content="summary_large_image"
-    />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
-    <meta
-      name="twitter:description"
-      content={description}
-    />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
-    <meta
-      name="twitter:image:alt"
-      content={`${siteConfig.title} paylaşım görseli`}
-    />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
   </head>
 
   <body>

@@ -20,8 +20,33 @@ type GitHubCommitResponse = {
   };
 };
 
+type GitHubContentFile = {
+  name: string;
+  path: string;
+  sha: string;
+  type: "file";
+  download_url: string | null;
+};
+
+type EntryRecord = {
+  path: string;
+  filename: string;
+  title: string;
+  date: string;
+  description: string;
+  tags: string[];
+  draft: boolean;
+  body: string;
+  coverImage: string;
+  coverAlt: string;
+  coverCaption: string;
+  slug: string;
+  entryUrl: string;
+};
+
 const SESSION_COOKIE = "sporadik_admin";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
+const JOURNAL_DIRECTORY = "src/content/journal";
 const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store"
@@ -46,6 +71,18 @@ export default {
         return handleLogout();
       }
 
+      if (url.pathname === "/api/admin/entries" && request.method === "GET") {
+        return handleEntries(request, env);
+      }
+
+      if (url.pathname === "/api/admin/entry" && request.method === "GET") {
+        return handleEntry(request, env);
+      }
+
+      if (url.pathname === "/api/admin/entry" && request.method === "DELETE") {
+        return handleDeleteEntry(request, env);
+      }
+
       if (url.pathname === "/api/admin/publish" && request.method === "POST") {
         return handlePublish(request, env);
       }
@@ -56,20 +93,14 @@ export default {
         return jsonResponse({ error: error.message }, { status: error.status });
       }
 
-      return jsonResponse(
-        { error: "Unexpected server error." },
-        { status: 500 }
-      );
+      return jsonResponse({ error: "Unexpected server error." }, { status: 500 });
     }
   }
 };
 
 async function handleLogin(request: Request, env: Env) {
   if (!env.ADMIN_PASSWORD || !env.ADMIN_SESSION_SECRET) {
-    return jsonResponse(
-      { error: "Admin secrets are missing on the server." },
-      { status: 500 }
-    );
+    return jsonResponse({ error: "Admin secrets are missing on the server." }, { status: 500 });
   }
 
   let payload: { password?: string };
@@ -108,19 +139,73 @@ async function handleLogout() {
   );
 }
 
-async function handlePublish(request: Request, env: Env) {
-  if (!(await isAuthenticated(request, env))) {
-    return jsonResponse({ error: "Authentication required." }, { status: 401 });
+async function handleEntries(request: Request, env: Env) {
+  await requireAuth(request, env);
+  const entries = await listEntries(env);
+  return jsonResponse({ entries });
+}
+
+async function handleEntry(request: Request, env: Env) {
+  await requireAuth(request, env);
+  const url = new URL(request.url);
+  const path = url.searchParams.get("path") ?? "";
+
+  if (!path.startsWith(`${JOURNAL_DIRECTORY}/`)) {
+    throw new HttpError(400, "Invalid entry path.");
   }
 
+  const text = await fetchRepoText(env, path);
+  const entry = parseEntry(path, text);
+  return jsonResponse({ entry });
+}
+
+async function handleDeleteEntry(request: Request, env: Env) {
+  await requireAuth(request, env);
+
+  let payload: { path?: string };
+
+  try {
+    payload = await request.json();
+  } catch {
+    throw new HttpError(400, "Invalid delete payload.");
+  }
+
+  const path = payload.path ?? "";
+  if (!path.startsWith(`${JOURNAL_DIRECTORY}/`)) {
+    throw new HttpError(400, "Invalid entry path.");
+  }
+
+  const branch = env.GITHUB_BRANCH || "main";
+  const source = await fetchRepoText(env, path);
+  const entry = parseEntry(path, source);
+
+  const deletePaths = [path];
+  if (entry.coverImage) {
+    deletePaths.push(publicPathFromCover(entry.coverImage));
+  }
+
+  const commitSha = await createCommit(env, {
+    branch,
+    message: `Delete ${entry.filename}`,
+    files: [],
+    deletePaths
+  });
+
+  return jsonResponse({ ok: true, deleted: entry.filename, commitSha });
+}
+
+async function handlePublish(request: Request, env: Env) {
+  await requireAuth(request, env);
+
   if (!env.GITHUB_TOKEN || !env.GITHUB_OWNER || !env.GITHUB_REPO) {
-    return jsonResponse(
-      { error: "GitHub publishing secrets are missing on the server." },
-      { status: 500 }
-    );
+    throw new HttpError(500, "GitHub publishing secrets are missing on the server.");
   }
 
   const formData = await request.formData();
+
+  const originalPath = getText(formData, "originalPath").trim();
+  const existingCoverImage = getText(formData, "existingCoverImage").trim();
+  const removeCoverImage = getText(formData, "removeCoverImage") === "true";
 
   const title = getText(formData, "title").trim();
   const date = normalizeDate(getText(formData, "date"));
@@ -134,28 +219,29 @@ async function handlePublish(request: Request, env: Env) {
   const coverCaption = getText(formData, "coverCaption").trim();
   const draft = getText(formData, "draft") === "true";
 
-  if (!title) {
-    return jsonResponse({ error: "Title is required." }, { status: 400 });
-  }
-
-  if (!date) {
-    return jsonResponse({ error: "Date is required." }, { status: 400 });
-  }
-
-  if (!body) {
-    return jsonResponse({ error: "Body is required." }, { status: 400 });
-  }
+  if (!title) throw new HttpError(400, "Title is required.");
+  if (!date) throw new HttpError(400, "Date is required.");
+  if (!body) throw new HttpError(400, "Body is required.");
 
   const slug = slugify(title);
   const filename = `${date}-${slug}.md`;
-  const entryPath = `src/content/journal/${filename}`;
+  const entryPath = `${JOURNAL_DIRECTORY}/${filename}`;
   const branch = env.GITHUB_BRANCH || "main";
+
+  let currentEntry: EntryRecord | null = null;
+  if (originalPath) {
+    const existingText = await fetchRepoText(env, originalPath);
+    currentEntry = parseEntry(originalPath, existingText);
+  }
+
+  if (!currentEntry || currentEntry.path !== entryPath) {
+    await ensurePathMissing(env, branch, entryPath);
+  }
 
   const imageFile = formData.get("image");
   let imageAsset:
     | {
         path: string;
-        contentType: string;
         buffer: ArrayBuffer;
       }
     | undefined;
@@ -164,12 +250,17 @@ async function handlePublish(request: Request, env: Env) {
     const extension = extensionForFile(imageFile);
     imageAsset = {
       path: `public/images/posts/${slug}/cover.${extension}`,
-      contentType: imageFile.type || mimeTypeForExtension(extension),
       buffer: await imageFile.arrayBuffer()
     };
   }
 
-  const coverImage = imageAsset ? `/${imageAsset.path.replace(/^public\//, "")}` : "";
+  let coverImage = "";
+  if (imageAsset) {
+    coverImage = `/${imageAsset.path.replace(/^public\//, "")}`;
+  } else if (!removeCoverImage) {
+    coverImage = existingCoverImage || currentEntry?.coverImage || "";
+  }
+
   const markdown = buildMarkdown({
     title,
     date,
@@ -182,12 +273,9 @@ async function handlePublish(request: Request, env: Env) {
     draft
   });
 
-  await ensurePathMissing(env, branch, entryPath);
-
   const files = [
     {
       path: entryPath,
-      contentType: "text/markdown; charset=utf-8",
       buffer: encoder.encode(markdown).buffer
     }
   ];
@@ -196,20 +284,44 @@ async function handlePublish(request: Request, env: Env) {
     files.push(imageAsset);
   }
 
+  const deletePaths: string[] = [];
+
+  if (currentEntry && currentEntry.path !== entryPath) {
+    deletePaths.push(currentEntry.path);
+  }
+
+  const previousCoverPath = existingCoverImage ? publicPathFromCover(existingCoverImage) : "";
+  if (removeCoverImage && previousCoverPath) {
+    deletePaths.push(previousCoverPath);
+  }
+
+  if (imageAsset && previousCoverPath && previousCoverPath !== imageAsset.path) {
+    deletePaths.push(previousCoverPath);
+  }
+
   const commitSha = await createCommit(env, {
     branch,
-    message: `Publish ${filename}`,
-    files
+    message: `${currentEntry ? "Update" : "Publish"} ${filename}`,
+    files,
+    deletePaths
   });
 
   return jsonResponse({
     ok: true,
+    mode: currentEntry ? "update" : "create",
     slug,
     filename,
     commitSha,
     coverImage,
-    entryUrl: `/journal/${date}-${slug}/`
+    entryUrl: `/journal/${date}-${slug}/`,
+    path: entryPath
   });
+}
+
+async function requireAuth(request: Request, env: Env) {
+  if (!(await isAuthenticated(request, env))) {
+    throw new HttpError(401, "Authentication required.");
+  }
 }
 
 async function isAuthenticated(request: Request, env: Env) {
@@ -232,13 +344,8 @@ async function verifySessionToken(token: string, secret: string) {
   const [expiresAtRaw, signature] = token.split(".");
   const expiresAt = Number(expiresAtRaw);
 
-  if (!expiresAtRaw || !signature || !Number.isFinite(expiresAt)) {
-    return false;
-  }
-
-  if (Date.now() >= expiresAt) {
-    return false;
-  }
+  if (!expiresAtRaw || !signature || !Number.isFinite(expiresAt)) return false;
+  if (Date.now() >= expiresAt) return false;
 
   const expected = await hmac(expiresAtRaw, secret);
   return safeEquals(signature, toBase64Url(expected));
@@ -254,6 +361,142 @@ async function hmac(value: string, secret: string) {
   );
 
   return crypto.subtle.sign("HMAC", key, encoder.encode(value));
+}
+
+async function listEntries(env: Env) {
+  const branch = env.GITHUB_BRANCH || "main";
+  const contents = await githubJson<GitHubContentFile[]>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${JOURNAL_DIRECTORY}?ref=${encodeURIComponent(branch)}`
+  );
+
+  const files = contents
+    .filter((item) => item.type === "file" && /\.(md|mdx)$/i.test(item.name))
+    .sort((a, b) => b.name.localeCompare(a.name, "en"));
+
+  const entries = await Promise.all(
+    files.map(async (file) => parseEntry(file.path, await fetchRepoText(env, file.path)))
+  );
+
+  return entries.sort((a, b) => b.date.localeCompare(a.date) || b.filename.localeCompare(a.filename));
+}
+
+async function fetchRepoText(env: Env, path: string) {
+  const branch = env.GITHUB_BRANCH || "main";
+  const response = await fetch(
+    githubApiUrl(`/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${path}?ref=${encodeURIComponent(branch)}`),
+    { headers: githubHeaders(env.GITHUB_TOKEN) }
+  );
+
+  if (!response.ok) {
+    throw await httpErrorFromGitHub(response);
+  }
+
+  const payload = (await response.json()) as { content?: string; encoding?: string };
+  if (payload.encoding !== "base64" || !payload.content) {
+    throw new HttpError(500, "Could not decode repository file.");
+  }
+
+  return decodeBase64Text(payload.content);
+}
+
+function parseEntry(path: string, source: string): EntryRecord {
+  const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  const frontmatter = match?.[1] ?? "";
+  const body = (match?.[2] ?? source).trim();
+  const fields = parseFrontmatter(frontmatter);
+  const filename = path.split("/").pop() ?? path;
+  const slug = filename.replace(/\.(md|mdx)$/i, "").replace(/^\d{4}-\d{2}-\d{2}-/, "");
+  const date = fields.date || filename.slice(0, 10);
+  const title = fields.title || slug;
+
+  return {
+    path,
+    filename,
+    title,
+    date,
+    description: fields.description || "",
+    tags: fields.tags,
+    draft: fields.draft,
+    body,
+    coverImage: fields.coverImage || "",
+    coverAlt: fields.coverAlt || "",
+    coverCaption: fields.coverCaption || "",
+    slug,
+    entryUrl: `/journal/${filename.replace(/\.(md|mdx)$/i, "")}/`
+  };
+}
+
+function parseFrontmatter(frontmatter: string) {
+  const lines = frontmatter.split(/\r?\n/);
+  const result = {
+    title: "",
+    date: "",
+    description: "",
+    coverImage: "",
+    coverAlt: "",
+    coverCaption: "",
+    tags: [] as string[],
+    draft: false
+  };
+
+  let inTags = false;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trimEnd();
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    if (inTags) {
+      if (trimmed.startsWith("- ")) {
+        result.tags.push(trimmed.slice(2).trim().replace(/^["']|["']$/g, ""));
+        continue;
+      }
+      inTags = false;
+    }
+
+    if (trimmed === "tags: []") {
+      result.tags = [];
+      continue;
+    }
+
+    if (trimmed === "tags:") {
+      inTags = true;
+      continue;
+    }
+
+    const separatorIndex = trimmed.indexOf(":");
+    if (separatorIndex === -1) continue;
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const value = trimmed.slice(separatorIndex + 1).trim().replace(/^["']|["']$/g, "");
+
+    switch (key) {
+      case "title":
+        result.title = unescapeYamlString(value);
+        break;
+      case "date":
+        result.date = value;
+        break;
+      case "description":
+        result.description = unescapeYamlString(value);
+        break;
+      case "coverImage":
+        result.coverImage = unescapeYamlString(value);
+        break;
+      case "coverAlt":
+        result.coverAlt = unescapeYamlString(value);
+        break;
+      case "coverCaption":
+        result.coverCaption = unescapeYamlString(value);
+        break;
+      case "draft":
+        result.draft = value === "true";
+        break;
+    }
+  }
+
+  return result;
 }
 
 function getText(formData: FormData, key: string) {
@@ -292,17 +535,9 @@ function buildMarkdown(input: {
   lines.push(`date: "${input.date}"`);
   lines.push(`description: "${escapeYamlString(input.description)}"`);
 
-  if (input.coverImage) {
-    lines.push(`coverImage: "${escapeYamlString(input.coverImage)}"`);
-  }
-
-  if (input.coverAlt) {
-    lines.push(`coverAlt: "${escapeYamlString(input.coverAlt)}"`);
-  }
-
-  if (input.coverCaption) {
-    lines.push(`coverCaption: "${escapeYamlString(input.coverCaption)}"`);
-  }
+  if (input.coverImage) lines.push(`coverImage: "${escapeYamlString(input.coverImage)}"`);
+  if (input.coverAlt) lines.push(`coverAlt: "${escapeYamlString(input.coverAlt)}"`);
+  if (input.coverCaption) lines.push(`coverCaption: "${escapeYamlString(input.coverCaption)}"`);
 
   if (input.tags.length > 0) {
     lines.push("tags:");
@@ -323,10 +558,12 @@ function escapeYamlString(value: string) {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+function unescapeYamlString(value: string) {
+  return value.replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+}
+
 function extensionForFile(file: File) {
-  const fromName = file.name.includes(".")
-    ? file.name.split(".").pop()?.toLowerCase()
-    : "";
+  const fromName = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() : "";
 
   if (fromName && ["jpg", "jpeg", "png", "webp", "gif", "avif"].includes(fromName)) {
     return fromName;
@@ -339,34 +576,18 @@ function extensionForFile(file: File) {
   return "jpg";
 }
 
-function mimeTypeForExtension(extension: string) {
-  switch (extension) {
-    case "png":
-      return "image/png";
-    case "webp":
-      return "image/webp";
-    case "gif":
-      return "image/gif";
-    case "avif":
-      return "image/avif";
-    default:
-      return "image/jpeg";
-  }
+function publicPathFromCover(coverImage: string) {
+  return `public${coverImage.startsWith("/") ? coverImage : `/${coverImage}`}`;
 }
 
 async function ensurePathMissing(env: Env, branch: string, path: string) {
-  const response = await fetch(githubApiUrl(`/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${path}?ref=${encodeURIComponent(branch)}`), {
-    headers: githubHeaders(env.GITHUB_TOKEN)
-  });
+  const response = await fetch(
+    githubApiUrl(`/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${path}?ref=${encodeURIComponent(branch)}`),
+    { headers: githubHeaders(env.GITHUB_TOKEN) }
+  );
 
-  if (response.status === 404) {
-    return;
-  }
-
-  if (response.ok) {
-    throw new HttpError(409, "A post with the same filename already exists.");
-  }
-
+  if (response.status === 404) return;
+  if (response.ok) throw new HttpError(409, "A post with the same filename already exists.");
   throw await httpErrorFromGitHub(response);
 }
 
@@ -377,9 +598,9 @@ async function createCommit(
     message: string;
     files: Array<{
       path: string;
-      contentType: string;
       buffer: ArrayBuffer;
     }>;
+    deletePaths?: string[];
   }
 ) {
   const ref = await githubJson<GitHubRefResponse>(
@@ -392,7 +613,7 @@ async function createCommit(
     `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits/${ref.object.sha}`
   );
 
-  const tree = [];
+  const tree: Array<Record<string, string | null>> = [];
 
   for (const file of input.files) {
     const blob = await githubJson<{ sha: string }>(
@@ -412,6 +633,15 @@ async function createCommit(
       mode: "100644",
       type: "blob",
       sha: blob.sha
+    });
+  }
+
+  for (const path of [...new Set(input.deletePaths ?? [])]) {
+    tree.push({
+      path,
+      mode: "100644",
+      type: "blob",
+      sha: null
     });
   }
 
@@ -475,12 +705,12 @@ async function httpErrorFromGitHub(response: Response) {
   let message = `GitHub request failed with status ${response.status}.`;
 
   try {
-    const payload = await response.json<{ message?: string }>();
+    const payload = (await response.json()) as { message?: string };
     if (payload.message) {
       message = payload.message;
     }
   } catch {
-    // ignore JSON parse failures and keep fallback message
+    // ignore JSON parse failures
   }
 
   return new HttpError(response.status, message);
@@ -500,10 +730,7 @@ function githubHeaders(token: string) {
 
 function parseCookies(header: string | null) {
   const cookies: Record<string, string> = {};
-
-  if (!header) {
-    return cookies;
-  }
+  if (!header) return cookies;
 
   for (const item of header.split(";")) {
     const [name, ...value] = item.trim().split("=");
@@ -514,11 +741,15 @@ function parseCookies(header: string | null) {
   return cookies;
 }
 
+function decodeBase64Text(value: string) {
+  const normalized = value.replace(/\n/g, "");
+  const binary = atob(normalized);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
 function toBase64Url(buffer: ArrayBuffer) {
-  return arrayBufferToBase64(buffer)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
+  return arrayBufferToBase64(buffer).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
@@ -534,12 +765,9 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 }
 
 function safeEquals(left: string, right: string) {
-  if (left.length !== right.length) {
-    return false;
-  }
+  if (left.length !== right.length) return false;
 
   let mismatch = 0;
-
   for (let index = 0; index < left.length; index += 1) {
     mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
   }
@@ -547,10 +775,7 @@ function safeEquals(left: string, right: string) {
   return mismatch === 0;
 }
 
-function jsonResponse(
-  payload: unknown,
-  init: ResponseInit & { headers?: Record<string, string> } = {}
-) {
+function jsonResponse(payload: unknown, init: ResponseInit & { headers?: Record<string, string> } = {}) {
   const headers = {
     ...JSON_HEADERS,
     ...(init.headers ?? {})
