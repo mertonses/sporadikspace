@@ -9,6 +9,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,9 +36,8 @@ jobs:
           command: deploy
 
       - name: Send latest journal entry to Buttondown
-        if: ${{ secrets.BUTTONDOWN_API_KEY != '' }}
+        if: ${{ env.BUTTONDOWN_API_KEY != '' }}
         env:
-          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
           GITHUB_SHA: ${{ github.sha }}
           SITE_URL: https://sporadik.space
