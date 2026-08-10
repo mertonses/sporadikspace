@@ -1,0 +1,203 @@
+---
+const pathname = Astro.url.pathname;
+
+const isCurrent = (href: string) => {
+  if (href === "/") {
+    return pathname === "/";
+  }
+
+  return pathname.startsWith(href);
+};
+---
+
+<header class="masthead">
+  <a
+    href="/"
+    class="brand"
+    aria-label="sporadik.space ana sayfa"
+  >
+    <span class="brand-primary">sporadik</span>
+    <span class="brand-secondary">.space</span>
+  </a>
+
+  <div class="masthead-tools">
+    <nav aria-label="Ana navigasyon">
+      <ul class="nav-list">
+        <li>
+          <a
+            href="/"
+            aria-current={isCurrent("/") ? "page" : undefined}
+          >
+            latest
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="/archive"
+            aria-current={isCurrent("/archive") ? "page" : undefined}
+          >
+            archive
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="/search"
+            aria-current={isCurrent("/search") ? "page" : undefined}
+          >
+            search
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="/subscribe"
+            aria-current={isCurrent("/subscribe") ? "page" : undefined}
+          >
+            subscribe
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div
+      class="theme-switcher"
+      role="group"
+      aria-label="Renk teması"
+    >
+      <button
+        type="button"
+        class="theme-button"
+        data-theme-value="light"
+        aria-label="Açık temayı kullan"
+        aria-pressed="false"
+      >
+        açık
+      </button>
+
+      <button
+        type="button"
+        class="theme-button"
+        data-theme-value="dark"
+        aria-label="Koyu temayı kullan"
+        aria-pressed="false"
+      >
+        koyu
+      </button>
+
+      <button
+        type="button"
+        class="theme-button"
+        data-theme-value="system"
+        aria-label="Sistem temasını kullan"
+        aria-pressed="false"
+      >
+        sistem
+      </button>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const storageKey = "sporadikspace-theme";
+    const validThemes = ["light", "dark", "system"];
+
+    const root = document.documentElement;
+    const themeColorMeta = document.querySelector(
+      'meta[name="theme-color"]'
+    );
+
+    const systemDarkQuery = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    );
+
+    const buttons = Array.from(
+      document.querySelectorAll("[data-theme-value]")
+    );
+
+    function getStoredTheme() {
+      try {
+        const storedTheme = localStorage.getItem(storageKey);
+
+        return validThemes.includes(storedTheme)
+          ? storedTheme
+          : "system";
+      } catch {
+        return "system";
+      }
+    }
+
+    function getResolvedTheme(theme) {
+      if (theme === "system") {
+        return systemDarkQuery.matches ? "dark" : "light";
+      }
+
+      return theme;
+    }
+
+    function updateThemeColor(theme) {
+      if (!themeColorMeta) {
+        return;
+      }
+
+      const resolvedTheme = getResolvedTheme(theme);
+
+      themeColorMeta.setAttribute(
+        "content",
+        resolvedTheme === "dark"
+          ? "#10110e"
+          : "#e8e2d6"
+      );
+    }
+
+    function updateButtons(theme) {
+      buttons.forEach((button) => {
+        const buttonTheme = button.dataset.themeValue;
+        const isActive = buttonTheme === theme;
+
+        button.setAttribute(
+          "aria-pressed",
+          isActive ? "true" : "false"
+        );
+
+        button.classList.toggle("active", isActive);
+      });
+    }
+
+    function applyTheme(theme, save = true) {
+      const safeTheme = validThemes.includes(theme)
+        ? theme
+        : "system";
+
+      root.dataset.theme = safeTheme;
+
+      updateButtons(safeTheme);
+      updateThemeColor(safeTheme);
+
+      if (save) {
+        try {
+          localStorage.setItem(storageKey, safeTheme);
+        } catch {
+          // localStorage kullanılamıyorsa seçim yalnızca
+          // mevcut oturumda uygulanır.
+        }
+      }
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        applyTheme(button.dataset.themeValue);
+      });
+    });
+
+    systemDarkQuery.addEventListener("change", () => {
+      if (root.dataset.theme === "system") {
+        updateThemeColor("system");
+      }
+    });
+
+    applyTheme(getStoredTheme(), false);
+  })();
+</script>

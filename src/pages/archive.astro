@@ -1,0 +1,34 @@
+---
+import { getCollection } from "astro:content";
+import EntryList from "../components/EntryList.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { groupArchive, publishedEntries } from "../lib/journal";
+import { siteConfig } from "../lib/site";
+
+const entries = publishedEntries(await getCollection("journal"));
+const archive = groupArchive(entries);
+---
+
+<BaseLayout title="Archive" description={siteConfig.description}>
+  <section class="terminal-block">
+    <p class="terminal-line">&gt; archive index online.</p>
+  </section>
+
+  <section class="terminal-block" aria-labelledby="archive-title">
+    <h1 id="archive-title" class="screen-title">ARCHIVE</h1>
+
+    {
+      archive.map((yearGroup) => (
+        <section id={`year-${yearGroup.year}`} class="archive-year">
+          <h2 class="year-title">{yearGroup.year}</h2>
+          {yearGroup.months.map((monthGroup) => (
+            <section class="archive-month">
+              <h3 class="month-title">{monthGroup.label}</h3>
+              <EntryList entries={monthGroup.entries} />
+            </section>
+          ))}
+        </section>
+      ))
+    }
+  </section>
+</BaseLayout>

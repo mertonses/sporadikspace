@@ -1,0 +1,9 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SearchClient from "../components/SearchClient.astro";
+import { siteConfig } from "../lib/site";
+---
+
+<BaseLayout title="Search" description={siteConfig.description}>
+  <SearchClient />
+</BaseLayout>

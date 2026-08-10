@@ -1,0 +1,110 @@
+---
+import {
+  entryDate,
+  entryTitle,
+  entryUrl,
+  shortDate,
+  stripMarkdown,
+} from "../lib/journal";
+
+import type { JournalEntry } from "../lib/journal";
+
+interface Props {
+  entries: JournalEntry[];
+  showDescription?: boolean;
+}
+
+interface EntryDataWithMedia {
+  description?: string;
+  coverImage?: string;
+  coverAlt?: string;
+  coverCaption?: string;
+}
+
+const {
+  entries,
+  showDescription = false,
+} = Astro.props;
+
+function summarize(entry: JournalEntry, description?: string) {
+  const explicit = description?.trim();
+  if (explicit) return explicit;
+
+  const plain = stripMarkdown(entry.body ?? "");
+  if (!plain) return "";
+
+  const sentence = plain.match(/^(.{80,220}?[.!?])(\s|$)/)?.[1] ?? plain.slice(0, 180);
+  return sentence.trim();
+}
+---
+
+<ul class="entry-list" role="list">
+  {
+    entries.map((entry) => {
+      const data =
+        entry.data as typeof entry.data & EntryDataWithMedia;
+
+      const rawDate = entryDate(entry);
+
+      const date =
+        rawDate instanceof Date
+          ? rawDate
+          : new Date(rawDate);
+
+      const description = summarize(entry, data.description);
+      const hasThumbnail = Boolean(data.coverImage);
+
+      return (
+        <li class="entry-row">
+          <a
+            href={entryUrl(entry)}
+            class={`entry-link${hasThumbnail ? " has-thumbnail" : ""}`}
+          >
+            {
+              data.coverImage && (
+                <figure class="entry-thumbnail">
+                  <img
+                    src={data.coverImage}
+                    alt={data.coverAlt ?? ""}
+                    loading="lazy"
+                    decoding="async"
+                  />
+
+                  {
+                    data.coverCaption && (
+                      <figcaption>
+                        {data.coverCaption}
+                      </figcaption>
+                    )
+                  }
+                </figure>
+              )
+            }
+
+            <div class="entry-copy">
+              <time
+                class="entry-date"
+                datetime={date.toISOString()}
+              >
+                [{shortDate(date)}]
+              </time>
+
+              <span class="entry-title">
+                {entryTitle(entry)}
+              </span>
+
+              {
+                showDescription &&
+                  description && (
+                    <span class="entry-description">
+                      {description}
+                    </span>
+                  )
+              }
+            </div>
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>

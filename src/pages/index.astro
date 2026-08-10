@@ -1,0 +1,54 @@
+---
+import { getCollection } from "astro:content";
+import EntryList from "../components/EntryList.astro";
+import TagCloud from "../components/TagCloud.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { publishedEntries, tagCloud, yearlyCounts } from "../lib/journal";
+
+const entries = publishedEntries(await getCollection("journal"));
+const latestEntries = entries.slice(0, 10);
+const archiveCounts = yearlyCounts(entries);
+const tags = tagCloud(entries);
+const hasTags = tags.length > 0;
+---
+
+<BaseLayout>
+  <div class:list={["home-grid", { "no-sidebar": !hasTags }]}>
+    <div class="home-main">
+      <section class="terminal-block">
+        <p class="boot-line">&gt; booting sporadikspace...</p>
+        <p class="boot-line">&gt; loading journal index...</p>
+        <p class="boot-line">&gt; ready.</p>
+      </section>
+
+      <section class="terminal-block" aria-labelledby="latest-heading">
+        <div class="section-head">
+          <h1 id="latest-heading" class="screen-title">LATEST ENTRIES</h1>
+          <a class="terminal-link" href="/rss.xml">rss.xml</a>
+        </div>
+        <EntryList entries={latestEntries} showDescription={true} />
+      </section>
+
+      <section class="terminal-block" aria-labelledby="archive-heading">
+        <h2 id="archive-heading" class="screen-title">ARCHIVE</h2>
+        <ul class="archive-index" role="list">
+          {
+            archiveCounts.map(({ year, count }) => (
+              <li>
+                <a href={`/archive#year-${year}`}>{year} ({count})</a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
+
+    {
+      hasTags && (
+        <div class="home-sidebar">
+          <TagCloud items={tags} />
+        </div>
+      )
+    }
+  </div>
+</BaseLayout>

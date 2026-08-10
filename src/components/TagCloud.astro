@@ -1,0 +1,41 @@
+---
+interface TagItem {
+  tag: string;
+  count: number;
+  href: string;
+  weight: number;
+}
+
+interface Props {
+  items: TagItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<aside class="tag-cloud-block" aria-labelledby="tags-heading">
+  <div class="section-head tag-cloud-head">
+    <h2 id="tags-heading" class="screen-title">Etiketler</h2>
+    <a class="terminal-link tag-cloud-link" href="/search">search</a>
+  </div>
+
+  {
+    items.length > 0 ? (
+      <div class="tag-cloud" role="list">
+        {items.map((item) => (
+          <a
+            href={item.href}
+            class="tag-cloud-item"
+            style={`--tag-weight:${item.weight};`}
+            aria-label={`${item.tag}, ${item.count} yazi`}
+          >
+            <span>{item.tag}</span>
+            <small>{item.count}</small>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="terminal-line">henüz etiket yok.</p>
+    )
+  }
+</aside>

@@ -1,0 +1,95 @@
+---
+const source = "/search-index.json";
+---
+
+<section class="terminal-block search-block" aria-labelledby="search-heading">
+  <h1 id="search-heading" class="screen-title">SEARCH</h1>
+  <p class="terminal-line">&gt; title / content / tags</p>
+
+  <label class="search-label" for="search-input">query</label>
+  <input
+    id="search-input"
+    class="search-input"
+    type="search"
+    name="q"
+    placeholder="> search the log"
+    autocomplete="off"
+  />
+
+  <div class="search-status" id="search-status">type to begin.</div>
+  <ul class="entry-list search-results" id="search-results"></ul>
+</section>
+
+<script type="module" define:vars={{ source }}>
+  const input = document.getElementById("search-input");
+  const list = document.getElementById("search-results");
+  const status = document.getElementById("search-status");
+  const params = new URLSearchParams(window.location.search);
+
+  let entries = [];
+
+  async function boot() {
+    try {
+      const response = await fetch(source);
+      entries = await response.json();
+      status.textContent = `${entries.length} indexed entries ready.`;
+    } catch {
+      status.textContent = "search index unavailable.";
+    }
+  }
+
+  function render(items) {
+    list.innerHTML = "";
+    if (!items.length) {
+      status.textContent = "no matching entries.";
+      return;
+    }
+
+    status.textContent = `${items.length} match${items.length === 1 ? "" : "es"}.`;
+
+    for (const item of items) {
+      const li = document.createElement("li");
+      li.className = "entry-row";
+      li.innerHTML = `
+        <a class="entry-link" href="/journal/${item.slug}/">
+          <span class="entry-date">[${item.date}]</span>
+          <span class="entry-title">${item.title}</span>
+          ${item.description ? `<span class="entry-description">${item.description}</span>` : ""}
+        </a>
+      `;
+      list.appendChild(li);
+    }
+  }
+
+  input?.addEventListener("input", (event) => {
+    const query = event.target.value.trim().toLowerCase();
+    if (!query) {
+      list.innerHTML = "";
+      status.textContent = `${entries.length} indexed entries ready.`;
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.delete("q");
+      window.history.replaceState({}, "", nextUrl);
+      return;
+    }
+
+    const matches = entries.filter((entry) => {
+      return [entry.title, entry.description, entry.tags.join(" "), entry.body]
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+    });
+
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set("q", event.target.value.trim());
+    window.history.replaceState({}, "", nextUrl);
+
+    render(matches);
+  });
+
+  boot().then(() => {
+    const initialQuery = params.get("q")?.trim();
+    if (!initialQuery || !input) return;
+    input.value = initialQuery;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+</script>

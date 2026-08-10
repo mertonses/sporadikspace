@@ -1,0 +1,57 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteConfig } from "../lib/site";
+import { getSubscriptionProviders } from "../lib/subscription";
+
+const providers = getSubscriptionProviders();
+const activeProvider = providers.find((provider) => provider.enabled);
+---
+
+<BaseLayout
+  title="Subscribe"
+  description={siteConfig.description}
+>
+  <section class="terminal-block">
+    <p class="terminal-line">&gt; subscribe to sporadikspace</p>
+  </section>
+
+  <section class="terminal-block" aria-labelledby="subscribe-title">
+    <h1 id="subscribe-title" class="screen-title">SUBSCRIBE</h1>
+
+    {
+      activeProvider ? (
+        <form
+          class="subscribe-form"
+          action={activeProvider.action}
+          method={activeProvider.method}
+        >
+          {
+            activeProvider.hiddenFields &&
+              Object.entries(activeProvider.hiddenFields).map(([key, value]) => (
+                <input type="hidden" name={key} value={value} />
+              ))
+          }
+
+          <label class="sr-only" for="subscriber-email">
+            email
+          </label>
+
+          <input
+            id="subscriber-email"
+            class="search-input"
+            type="email"
+            name={activeProvider.emailField}
+            placeholder="you@example.com"
+            required
+          />
+
+          <button class="submit-button" type="submit">
+            subscribe
+          </button>
+        </form>
+      ) : (
+        <p class="terminal-line">subscription is not available yet.</p>
+      )
+    }
+  </section>
+</BaseLayout>

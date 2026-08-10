@@ -1,0 +1,39 @@
+{
+  "name": "mert-log",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "suggest-tags": "node ./scripts/suggest-tags.mjs",
+    "suggest-tags:latest": "node ./scripts/suggest-tags.mjs --latest",
+    "suggest-tags:write": "node ./scripts/suggest-tags.mjs --latest --write",
+    "publish:latest-email": "node ./scripts/publish-latest-email.mjs",
+    "publish:latest-email:dry-run": "node ./scripts/publish-latest-email.mjs --dry-run",
+    "deploy": "npm run build && npx wrangler deploy"
+  },
+  "keywords": [
+    "astro",
+    "journal",
+    "digital-garden",
+    "markdown",
+    "cloudflare-pages"
+  ],
+  "author": "Mert Gorkem Onses",
+  "license": "MIT",
+  "description": "Personal journal and digital garden for sporadik.space",
+  "dependencies": {
+    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.2.0",
+    "openai": "^6.6.0",
+    "typescript": "^7.0.2"
+  },
+  "devDependencies": {
+    "wrangler": "^4.119.0"
+  }
+}

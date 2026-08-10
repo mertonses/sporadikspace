@@ -1,0 +1,90 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { entryDate, entrySlug, entryTitle, entryUrl, formatDate } from "../../lib/journal";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("journal", ({ data }) => !data.draft);
+  return entries.map((entry) => ({
+    params: { slug: entrySlug(entry) },
+    props: { entry }
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const coverImage = entry.data.coverImage ?? "";
+---
+
+<BaseLayout
+  title={entryTitle(entry)}
+  description={entry.data.description || entryTitle(entry)}
+  canonicalPath={entryUrl(entry)}
+  type="article"
+>
+  <article class="terminal-block">
+    <a href="/" class="terminal-link back-link">&lt; return to index</a>
+    <h1 class="post-title">{entryTitle(entry)}</h1>
+    <div class="post-meta">
+      <span>[{formatDate(entryDate(entry))}]</span>
+      {
+        entry.data.tags.length > 0 && (
+          <ul class="tag-list" role="list">
+            {entry.data.tags.map((tag) => <li>{tag}</li>)}
+          </ul>
+        )
+      }
+    </div>
+    {
+      entry.data.coverImage && (
+        <figure class="post-cover">
+          <img src={entry.data.coverImage} alt={entry.data.coverAlt ?? ""} />
+          {entry.data.coverCaption && <figcaption>{entry.data.coverCaption}</figcaption>}
+        </figure>
+      )
+    }
+    <div class="post-body">
+      <Content />
+    </div>
+  </article>
+
+  {
+    coverImage && (
+      <script
+        is:inline
+        define:vars={{
+          coverImage
+        }}
+      >
+        (() => {
+          const postBody = document.querySelector(".post-body");
+          if (!postBody) return;
+
+          const normalize = (value) => {
+            try {
+              return new URL(value, window.location.origin).pathname;
+            } catch {
+              return value;
+            }
+          };
+
+          const targetPath = normalize(coverImage);
+          const duplicateImage = Array.from(
+            postBody.querySelectorAll("img")
+          ).find((image) => normalize(image.getAttribute("src") ?? "") === targetPath);
+
+          if (!duplicateImage) return;
+
+          const removableWrapper = duplicateImage.closest("p, figure");
+
+          if (removableWrapper && removableWrapper.parentElement === postBody) {
+            removableWrapper.remove();
+            return;
+          }
+
+          duplicateImage.remove();
+        })();
+      </script>
+    )
+  }
+</BaseLayout>
