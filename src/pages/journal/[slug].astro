@@ -1,10 +1,18 @@
 ---
 import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { entryDate, entrySlug, entryTitle, entryUrl, formatDate } from "../../lib/journal";
+import {
+  entryDate,
+  entrySlug,
+  entryStatus,
+  entryTitle,
+  entryUrl,
+  formatDate,
+  publishedEntries
+} from "../../lib/journal";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("journal", ({ data }) => !data.draft);
+  const entries = publishedEntries(await getCollection("journal"));
   return entries.map((entry) => ({
     params: { slug: entrySlug(entry) },
     props: { entry }
@@ -12,11 +20,16 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
+if (entryStatus(entry) !== "published") {
+  throw new Error(`Attempted to render unpublished entry: ${entry.id}`);
+}
+
 const { Content } = await render(entry);
 const coverImage = entry.data.coverImage ?? "";
+const coverPosition = `${entry.data.coverFocusX ?? 50}% ${entry.data.coverFocusY ?? 50}%`;
 const shareUrl = new URL(entryUrl(entry), Astro.site ?? Astro.url).toString();
 const shareTitle = entryTitle(entry);
-const shareText = `${shareTitle} — sporadik.space`;
+const shareText = `${shareTitle} - sporadik.space`;
 ---
 
 <BaseLayout
@@ -43,7 +56,11 @@ const shareText = `${shareTitle} — sporadik.space`;
     {
       entry.data.coverImage && (
         <figure class="post-cover">
-          <img src={entry.data.coverImage} alt={entry.data.coverAlt ?? ""} />
+          <img
+            src={entry.data.coverImage}
+            alt={entry.data.coverAlt ?? ""}
+            style={`object-position:${coverPosition};`}
+          />
           {entry.data.coverCaption && <figcaption>{entry.data.coverCaption}</figcaption>}
         </figure>
       )

@@ -13,8 +13,12 @@ const journal = defineCollection({
     coverImage: z.string().optional(),
     coverAlt: z.string().optional(),
     coverCaption: z.string().optional(),
+    coverFocusX: z.coerce.number().min(0).max(100).default(50),
+    coverFocusY: z.coerce.number().min(0).max(100).default(50),
     tags: z.array(z.string()).default([]),
-    draft: z.boolean().default(false)
+    draft: z.boolean().default(false),
+    status: z.enum(["draft", "scheduled", "published"]).default("published"),
+    publishAt: z.coerce.date().optional()
   })
 });
 

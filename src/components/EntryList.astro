@@ -19,6 +19,8 @@ interface EntryDataWithMedia {
   coverImage?: string;
   coverAlt?: string;
   coverCaption?: string;
+  coverFocusX?: number;
+  coverFocusY?: number;
 }
 
 const {
@@ -68,6 +70,7 @@ function summarize(entry: JournalEntry, description?: string) {
                     alt={data.coverAlt ?? ""}
                     loading="lazy"
                     decoding="async"
+                    style={`object-position:${data.coverFocusX ?? 50}% ${data.coverFocusY ?? 50}%;`}
                   />
 
                   {

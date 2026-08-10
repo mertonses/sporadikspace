@@ -1,6 +1,7 @@
 import type { CollectionEntry } from "astro:content";
 
 export type JournalEntry = CollectionEntry<"journal">;
+export type EntryStatus = "draft" | "scheduled" | "published";
 
 export function entrySlug(entry: JournalEntry) {
   return entry.id.replace(/\.(md|mdx)$/i, "");
@@ -39,12 +40,33 @@ export function entryDate(entry: JournalEntry) {
   return new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00.000Z`);
 }
 
-export function sortEntries(entries: JournalEntry[]) {
-  return [...entries].sort((a, b) => entryDate(b).getTime() - entryDate(a).getTime());
+export function entryPublishDate(entry: JournalEntry) {
+  if (entry.data.publishAt instanceof Date && !Number.isNaN(entry.data.publishAt.getTime())) {
+    return entry.data.publishAt;
+  }
+
+  return entryDate(entry);
 }
 
-export function publishedEntries(entries: JournalEntry[]) {
-  return sortEntries(entries.filter((entry) => !entry.data.draft));
+export function entryStatus(entry: JournalEntry, now = new Date()): EntryStatus {
+  if (entry.data.draft || entry.data.status === "draft") {
+    return "draft";
+  }
+
+  const publishDate = entryPublishDate(entry);
+  if ((entry.data.status === "scheduled" || publishDate.getTime() > now.getTime())) {
+    return publishDate.getTime() <= now.getTime() ? "published" : "scheduled";
+  }
+
+  return "published";
+}
+
+export function sortEntries(entries: JournalEntry[]) {
+  return [...entries].sort((a, b) => entryPublishDate(b).getTime() - entryPublishDate(a).getTime());
+}
+
+export function publishedEntries(entries: JournalEntry[], now = new Date()) {
+  return sortEntries(entries.filter((entry) => entryStatus(entry, now) === "published"));
 }
 
 export function formatDate(date: Date) {

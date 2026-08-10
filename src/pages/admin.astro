@@ -1,7 +1,19 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const today = new Date().toISOString().slice(0, 10);
+const current = new Date();
+const today = current.toISOString().slice(0, 10);
+const formatter = new Intl.DateTimeFormat("sv-SE", {
+  timeZone: "Europe/Istanbul",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false
+});
+const parts = Object.fromEntries(formatter.formatToParts(current).map((part) => [part.type, part.value]));
+const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
 ---
 
 <BaseLayout title="Admin">
@@ -35,151 +47,273 @@ const today = new Date().toISOString().slice(0, 10);
             session ready.
           </p>
 
-          <button class="provider-pill" type="button" data-admin-reset-form>
-            new entry
-          </button>
+          <div class="admin-toolbar-actions">
+            <button class="provider-pill" type="button" data-admin-reset-form>
+              new entry
+            </button>
 
-          <button class="provider-pill" type="button" data-admin-logout>
-            lock
-          </button>
+            <button class="provider-pill" type="button" data-admin-logout>
+              lock
+            </button>
+          </div>
         </div>
 
-        <form class="admin-form" data-admin-form>
-          <input type="hidden" name="originalPath" value="" />
-          <input type="hidden" name="existingCoverImage" value="" />
+        <div class="admin-dashboard-grid">
+          <form class="admin-form" data-admin-form>
+            <input type="hidden" name="originalPath" value="" />
+            <input type="hidden" name="existingCoverImage" value="" />
+            <input type="hidden" name="coverFocusX" value="50" />
+            <input type="hidden" name="coverFocusY" value="50" />
+            <input type="hidden" name="intent" value="published" />
 
-          <div class="admin-summary">
-            <p class="admin-summary-label" data-admin-mode-label>new entry</p>
-            <p class="admin-summary-value" data-admin-entry-url>
-              /journal/{today}-untitled/
-            </p>
-            <p class="admin-summary-meta" data-admin-word-count>
-              0 words
-            </p>
-          </div>
+            <div class="admin-summary">
+              <p class="admin-summary-label" data-admin-mode-label>new entry</p>
+              <p class="admin-summary-value" data-admin-entry-url>
+                /journal/{today}-untitled/
+              </p>
+              <div class="admin-summary-meta-row">
+                <p class="admin-summary-meta" data-admin-word-count>
+                  0 words
+                </p>
+                <p class="admin-summary-meta" data-admin-reading-time>
+                  1 min read
+                </p>
+                <p class="admin-summary-meta" data-admin-status-chip>
+                  published
+                </p>
+              </div>
+            </div>
 
-          <div class="admin-grid">
+            <div class="admin-grid">
+              <label>
+                <span class="search-label">title</span>
+                <input class="search-input" type="text" name="title" required />
+              </label>
+
+              <label>
+                <span class="search-label">date</span>
+                <input class="search-input" type="date" name="date" value={today} required />
+              </label>
+            </div>
+
+            <div class="admin-grid">
+              <label>
+                <span class="search-label">status</span>
+                <select class="search-input" name="status">
+                  <option value="published">published</option>
+                  <option value="scheduled">scheduled</option>
+                  <option value="draft">draft</option>
+                </select>
+              </label>
+
+              <label>
+                <span class="search-label">publish at</span>
+                <input
+                  class="search-input"
+                  type="datetime-local"
+                  name="publishAt"
+                  value={nowLocal}
+                />
+              </label>
+            </div>
+
             <label>
-              <span class="search-label">title</span>
-              <input class="search-input" type="text" name="title" required />
-            </label>
-
-            <label>
-              <span class="search-label">date</span>
-              <input class="search-input" type="date" name="date" value={today} required />
-            </label>
-          </div>
-
-          <label>
-            <span class="search-label">description</span>
-            <input
-              class="search-input"
-              type="text"
-              name="description"
-              placeholder="short deck for homepage and meta"
-            />
-          </label>
-
-          <label>
-            <span class="search-label">tags</span>
-            <input
-              class="search-input"
-              type="text"
-              name="tags"
-              placeholder="deneme, notlar, gözlem"
-            />
-          </label>
-
-          <label>
-            <span class="search-label">cover image</span>
-            <input class="search-input admin-file" type="file" name="image" accept="image/*" />
-          </label>
-
-          <figure class="admin-image-preview" data-admin-image-preview hidden>
-            <img src="" alt="" data-admin-image-preview-img />
-            <figcaption data-admin-image-preview-caption>
-              cover preview
-            </figcaption>
-          </figure>
-
-          <label class="admin-checkbox">
-            <input type="checkbox" name="removeCoverImage" value="true" />
-            <span>remove current cover image</span>
-          </label>
-
-          <div class="admin-grid">
-            <label>
-              <span class="search-label">cover alt</span>
+              <span class="search-label">description</span>
               <input
                 class="search-input"
                 type="text"
-                name="coverAlt"
-                placeholder="short image description"
+                name="description"
+                placeholder="short deck for homepage and meta"
               />
             </label>
 
             <label>
-              <span class="search-label">cover caption</span>
+              <span class="search-label">tags</span>
               <input
                 class="search-input"
                 type="text"
-                name="coverCaption"
-                placeholder="optional caption"
+                name="tags"
+                placeholder="deneme, notlar, gözlem"
               />
             </label>
-          </div>
 
-          <label>
-            <span class="search-label">body</span>
-            <textarea
-              class="search-input admin-textarea"
-              name="body"
-              placeholder="write in markdown..."
-              required
-            ></textarea>
-          </label>
+            <section class="admin-subpanel" aria-labelledby="admin-tag-title">
+              <div class="section-head">
+                <h2 id="admin-tag-title" class="screen-title">TAG INTELLIGENCE</h2>
+                <button class="provider-pill" type="button" data-admin-refresh-tags>
+                  refresh
+                </button>
+              </div>
 
-          <label class="admin-checkbox">
-            <input type="checkbox" name="draft" value="true" />
-            <span>save as draft</span>
-          </label>
+              <div class="admin-tag-grid">
+                <div>
+                  <p class="admin-subtitle">suggested</p>
+                  <div class="admin-pill-list" data-admin-tag-suggestions></div>
+                </div>
 
-          <div class="admin-inline admin-actions">
-            <button class="submit-button" type="submit" data-admin-submit>
-              publish
-            </button>
-            <button class="provider-pill" type="button" data-admin-clear-draft>
-              clear local draft
-            </button>
-            <p class="terminal-line admin-feedback" data-admin-feedback></p>
-          </div>
-        </form>
+                <div>
+                  <p class="admin-subtitle">recurring terms</p>
+                  <div class="admin-pill-list admin-pill-list-muted" data-admin-recurring-terms></div>
+                </div>
+              </div>
 
-        <section class="admin-preview" aria-labelledby="admin-preview-title">
-          <div class="section-head">
-            <h2 id="admin-preview-title" class="screen-title">PREVIEW</h2>
-            <p class="muted admin-note" data-admin-draft-note>
-              local draft autosaves on this device
-            </p>
-          </div>
+              <div class="admin-tag-grid">
+                <div>
+                  <p class="admin-subtitle">known site tags</p>
+                  <div class="admin-pill-list" data-admin-known-tags></div>
+                </div>
 
-          <article class="admin-preview-card">
-            <p class="entry-date" data-admin-preview-date>[{today}]</p>
-            <h3 class="admin-preview-title" data-admin-preview-title-text>Untitled</h3>
-            <p class="entry-description" data-admin-preview-description>
-              short deck will appear here.
-            </p>
-            <div class="admin-preview-body post-body" data-admin-preview-body>
-              <p>write in markdown and the preview will update here.</p>
+                <div>
+                  <p class="admin-subtitle">warnings</p>
+                  <div class="admin-list-compact" data-admin-tag-warnings></div>
+                </div>
+              </div>
+            </section>
+
+            <label>
+              <span class="search-label">cover image</span>
+              <input class="search-input admin-file" type="file" name="image" accept="image/*" />
+            </label>
+
+            <figure class="admin-image-preview" data-admin-image-preview hidden>
+              <div class="admin-image-stage" data-admin-image-stage>
+                <img src="" alt="" data-admin-image-preview-img />
+                <span class="admin-focus-marker" data-admin-focus-marker></span>
+              </div>
+              <figcaption>
+                <span data-admin-image-preview-caption>cover preview</span>
+                <span class="admin-focus-readout" data-admin-focus-readout>50 / 50</span>
+              </figcaption>
+            </figure>
+
+            <div class="admin-grid admin-grid-tight">
+              <label>
+                <span class="search-label">focus x</span>
+                <input class="search-input" type="range" min="0" max="100" step="1" name="coverFocusXRange" value="50" />
+              </label>
+              <label>
+                <span class="search-label">focus y</span>
+                <input class="search-input" type="range" min="0" max="100" step="1" name="coverFocusYRange" value="50" />
+              </label>
             </div>
-            <div class="admin-publish-result" data-admin-publish-result hidden>
-              <p class="terminal-line">published successfully.</p>
-              <a class="terminal-link" href="#" target="_blank" rel="noreferrer" data-admin-live-link>
-                open live post
-              </a>
+
+            <label class="admin-checkbox">
+              <input type="checkbox" name="removeCoverImage" value="true" />
+              <span>remove current cover image</span>
+            </label>
+
+            <div class="admin-grid">
+              <label>
+                <span class="search-label">cover alt</span>
+                <input
+                  class="search-input"
+                  type="text"
+                  name="coverAlt"
+                  placeholder="short image description"
+                />
+              </label>
+
+              <label>
+                <span class="search-label">cover caption</span>
+                <input
+                  class="search-input"
+                  type="text"
+                  name="coverCaption"
+                  placeholder="optional caption"
+                />
+              </label>
             </div>
-          </article>
-        </section>
+
+            <label>
+              <span class="search-label">body</span>
+              <textarea
+                class="search-input admin-textarea"
+                name="body"
+                placeholder="write in markdown..."
+                required
+              ></textarea>
+            </label>
+
+            <div class="admin-subpanel admin-subpanel-quick">
+              <div class="section-head">
+                <h2 class="screen-title">QUICK ACTIONS</h2>
+                <p class="muted admin-note">draft, schedule or publish instantly</p>
+              </div>
+
+              <div class="admin-quick-actions">
+                <button class="provider-pill" type="button" data-admin-quick="draft">
+                  save draft
+                </button>
+                <button class="provider-pill" type="button" data-admin-quick="scheduled">
+                  schedule
+                </button>
+                <button class="submit-button" type="button" data-admin-quick="published">
+                  publish now
+                </button>
+              </div>
+            </div>
+
+            <div class="admin-inline admin-actions">
+              <button class="submit-button" type="submit" data-admin-submit>
+                publish
+              </button>
+              <button class="provider-pill" type="button" data-admin-clear-draft>
+                clear local draft
+              </button>
+              <p class="terminal-line admin-feedback" data-admin-feedback></p>
+            </div>
+          </form>
+
+          <div class="admin-side-stack">
+            <section class="admin-preview" aria-labelledby="admin-preview-title">
+              <div class="section-head">
+                <h2 id="admin-preview-title" class="screen-title">PREVIEW</h2>
+                <p class="muted admin-note" data-admin-draft-note>
+                  local draft autosaves on this device
+                </p>
+              </div>
+
+              <article class="admin-preview-card">
+                <p class="entry-date" data-admin-preview-date>[{today}]</p>
+                <h3 class="admin-preview-title" data-admin-preview-title-text>Untitled</h3>
+                <p class="entry-description" data-admin-preview-description>
+                  short deck will appear here.
+                </p>
+                <div class="admin-preview-body post-body" data-admin-preview-body>
+                  <p>write in markdown and the preview will update here.</p>
+                </div>
+                <div class="admin-publish-result" data-admin-publish-result hidden>
+                  <p class="terminal-line">published successfully.</p>
+                  <a class="terminal-link" href="#" target="_blank" rel="noreferrer" data-admin-live-link>
+                    open live post
+                  </a>
+                </div>
+              </article>
+            </section>
+
+            <section class="admin-library" aria-labelledby="admin-revision-title">
+              <div class="section-head">
+                <h2 id="admin-revision-title" class="screen-title">REVISION HISTORY</h2>
+                <p class="muted admin-note" data-admin-revision-note>
+                  load an entry to inspect revisions
+                </p>
+              </div>
+              <div class="admin-revision-list" data-admin-revision-list>
+                <p class="terminal-line">no entry loaded yet.</p>
+              </div>
+            </section>
+
+            <section class="admin-library" aria-labelledby="admin-analytics-title">
+              <div class="section-head">
+                <h2 id="admin-analytics-title" class="screen-title">MICRO ANALYTICS</h2>
+                <p class="muted admin-note">editorial overview</p>
+              </div>
+              <div class="admin-analytics" data-admin-analytics>
+                <p class="terminal-line">loading analytics...</p>
+              </div>
+            </section>
+          </div>
+        </div>
 
         <section class="admin-library" aria-labelledby="admin-library-title">
           <div class="section-head">
@@ -198,9 +332,9 @@ const today = new Date().toISOString().slice(0, 10);
   </section>
 </BaseLayout>
 
-<script is:inline>
+<script is:inline define:vars={{ today, nowLocal }}>
   (() => {
-    const storageKey = "sporadikspace-admin-draft";
+    const storageKey = "sporadikspace-admin-draft-v2";
     const authBlock = document.querySelector("[data-admin-auth]");
     const panel = document.querySelector("[data-admin-panel]");
     const passwordInput = document.querySelector("#admin-password");
@@ -214,6 +348,8 @@ const today = new Date().toISOString().slice(0, 10);
     const clearDraftButton = document.querySelector("[data-admin-clear-draft]");
     const entryUrl = document.querySelector("[data-admin-entry-url]");
     const wordCount = document.querySelector("[data-admin-word-count]");
+    const readingTime = document.querySelector("[data-admin-reading-time]");
+    const statusChip = document.querySelector("[data-admin-status-chip]");
     const previewDate = document.querySelector("[data-admin-preview-date]");
     const previewTitle = document.querySelector("[data-admin-preview-title-text]");
     const previewDescription = document.querySelector("[data-admin-preview-description]");
@@ -221,34 +357,52 @@ const today = new Date().toISOString().slice(0, 10);
     const previewImage = document.querySelector("[data-admin-image-preview]");
     const previewImageImg = document.querySelector("[data-admin-image-preview-img]");
     const previewImageCaption = document.querySelector("[data-admin-image-preview-caption]");
+    const imageStage = document.querySelector("[data-admin-image-stage]");
+    const focusMarker = document.querySelector("[data-admin-focus-marker]");
+    const focusReadout = document.querySelector("[data-admin-focus-readout]");
     const publishResult = document.querySelector("[data-admin-publish-result]");
     const liveLink = document.querySelector("[data-admin-live-link]");
     const draftNote = document.querySelector("[data-admin-draft-note]");
     const modeLabel = document.querySelector("[data-admin-mode-label]");
     const listContainer = document.querySelector("[data-admin-entry-list]");
     const libraryNote = document.querySelector("[data-admin-library-note]");
+    const revisionList = document.querySelector("[data-admin-revision-list]");
+    const revisionNote = document.querySelector("[data-admin-revision-note]");
+    const analyticsContainer = document.querySelector("[data-admin-analytics]");
+    const tagSuggestions = document.querySelector("[data-admin-tag-suggestions]");
+    const recurringTerms = document.querySelector("[data-admin-recurring-terms]");
+    const knownTags = document.querySelector("[data-admin-known-tags]");
+    const tagWarnings = document.querySelector("[data-admin-tag-warnings]");
+    const refreshTagsButton = document.querySelector("[data-admin-refresh-tags]");
 
     if (!form) return;
 
     const fields = {
       originalPath: form.querySelector('[name="originalPath"]'),
       existingCoverImage: form.querySelector('[name="existingCoverImage"]'),
+      coverFocusX: form.querySelector('[name="coverFocusX"]'),
+      coverFocusY: form.querySelector('[name="coverFocusY"]'),
+      coverFocusXRange: form.querySelector('[name="coverFocusXRange"]'),
+      coverFocusYRange: form.querySelector('[name="coverFocusYRange"]'),
+      intent: form.querySelector('[name="intent"]'),
       title: form.querySelector('[name="title"]'),
       date: form.querySelector('[name="date"]'),
+      status: form.querySelector('[name="status"]'),
+      publishAt: form.querySelector('[name="publishAt"]'),
       description: form.querySelector('[name="description"]'),
       tags: form.querySelector('[name="tags"]'),
       image: form.querySelector('[name="image"]'),
       removeCoverImage: form.querySelector('[name="removeCoverImage"]'),
       coverAlt: form.querySelector('[name="coverAlt"]'),
       coverCaption: form.querySelector('[name="coverCaption"]'),
-      body: form.querySelector('[name="body"]'),
-      draft: form.querySelector('[name="draft"]')
+      body: form.querySelector('[name="body"]')
     };
 
     let currentImageUrl = "";
     let currentRemoteImage = "";
     let entries = [];
     let suppressDraftWrite = false;
+    let tagTimer = null;
 
     function setMessage(message, isError = false) {
       if (!feedback) return;
@@ -316,18 +470,29 @@ const today = new Date().toISOString().slice(0, 10);
       return matches ? matches.length : 0;
     }
 
+    function readingMinutes(words) {
+      return Math.max(1, Math.round(words / 225));
+    }
+
+    function normalizeQuickIntent(intent) {
+      return intent === "draft" || intent === "scheduled" ? intent : "published";
+    }
+
     function getDraftSnapshot() {
       return {
         originalPath: fields.originalPath.value,
         existingCoverImage: fields.existingCoverImage.value,
+        coverFocusX: fields.coverFocusX.value,
+        coverFocusY: fields.coverFocusY.value,
         title: fields.title.value,
         date: fields.date.value,
+        status: fields.status.value,
+        publishAt: fields.publishAt.value,
         description: fields.description.value,
         tags: fields.tags.value,
         coverAlt: fields.coverAlt.value,
         coverCaption: fields.coverCaption.value,
         body: fields.body.value,
-        draft: Boolean(fields.draft.checked),
         removeCoverImage: Boolean(fields.removeCoverImage.checked)
       };
     }
@@ -348,14 +513,19 @@ const today = new Date().toISOString().slice(0, 10);
         const snapshot = JSON.parse(raw);
         fields.originalPath.value = snapshot.originalPath || "";
         fields.existingCoverImage.value = snapshot.existingCoverImage || "";
+        fields.coverFocusX.value = snapshot.coverFocusX || "50";
+        fields.coverFocusY.value = snapshot.coverFocusY || "50";
+        fields.coverFocusXRange.value = snapshot.coverFocusX || "50";
+        fields.coverFocusYRange.value = snapshot.coverFocusY || "50";
         fields.title.value = snapshot.title || "";
         fields.date.value = snapshot.date || fields.date.value;
+        fields.status.value = snapshot.status || "published";
+        fields.publishAt.value = snapshot.publishAt || fields.publishAt.value;
         fields.description.value = snapshot.description || "";
         fields.tags.value = snapshot.tags || "";
         fields.coverAlt.value = snapshot.coverAlt || "";
         fields.coverCaption.value = snapshot.coverCaption || "";
         fields.body.value = snapshot.body || "";
-        fields.draft.checked = Boolean(snapshot.draft);
         fields.removeCoverImage.checked = Boolean(snapshot.removeCoverImage);
         currentRemoteImage = fields.existingCoverImage.value || "";
         if (draftNote) {
@@ -371,7 +541,14 @@ const today = new Date().toISOString().slice(0, 10);
       form.reset();
       fields.originalPath.value = "";
       fields.existingCoverImage.value = "";
-      fields.date.value = new Date().toISOString().slice(0, 10);
+      fields.coverFocusX.value = "50";
+      fields.coverFocusY.value = "50";
+      fields.coverFocusXRange.value = "50";
+      fields.coverFocusYRange.value = "50";
+      fields.intent.value = "published";
+      fields.date.value = today;
+      fields.status.value = "published";
+      fields.publishAt.value = nowLocal;
       fields.removeCoverImage.checked = false;
       currentRemoteImage = "";
       publishResult.hidden = preservePublishResult ? publishResult.hidden : true;
@@ -380,6 +557,12 @@ const today = new Date().toISOString().slice(0, 10);
         currentImageUrl = "";
       }
       previewImage.hidden = true;
+      if (revisionList) {
+        revisionList.innerHTML = "<p class='terminal-line'>no entry loaded yet.</p>";
+      }
+      if (revisionNote) {
+        revisionNote.textContent = "load an entry to inspect revisions";
+      }
       submitButton.textContent = "publish";
       if (modeLabel) {
         modeLabel.textContent = "new entry";
@@ -390,11 +573,30 @@ const today = new Date().toISOString().slice(0, 10);
     function clearDraft() {
       localStorage.removeItem(storageKey);
       resetFormState();
-      updatePreview();
+      updatePreview(true);
       if (draftNote) {
         draftNote.textContent = "local draft cleared";
       }
       setMessage("local draft cleared.");
+    }
+
+    function setFocus(x, y) {
+      const nextX = Math.max(0, Math.min(100, Math.round(Number(x) || 50)));
+      const nextY = Math.max(0, Math.min(100, Math.round(Number(y) || 50)));
+      fields.coverFocusX.value = `${nextX}`;
+      fields.coverFocusY.value = `${nextY}`;
+      fields.coverFocusXRange.value = `${nextX}`;
+      fields.coverFocusYRange.value = `${nextY}`;
+      if (previewImageImg) {
+        previewImageImg.style.objectPosition = `${nextX}% ${nextY}%`;
+      }
+      if (focusMarker) {
+        focusMarker.style.left = `${nextX}%`;
+        focusMarker.style.top = `${nextY}%`;
+      }
+      if (focusReadout) {
+        focusReadout.textContent = `${nextX} / ${nextY}`;
+      }
     }
 
     function updateImagePreview() {
@@ -410,6 +612,7 @@ const today = new Date().toISOString().slice(0, 10);
         previewImageImg.alt = fields.coverAlt.value || fields.title.value || "cover preview";
         previewImageCaption.textContent = fields.coverCaption.value || file.name;
         previewImage.hidden = false;
+        setFocus(fields.coverFocusX.value, fields.coverFocusY.value);
         return;
       }
 
@@ -426,19 +629,30 @@ const today = new Date().toISOString().slice(0, 10);
       previewImageImg.alt = fields.coverAlt.value || fields.title.value || "cover preview";
       previewImageCaption.textContent = fields.coverCaption.value || "current cover image";
       previewImage.hidden = false;
+      setFocus(fields.coverFocusX.value, fields.coverFocusY.value);
+    }
+
+    function statusLabel() {
+      const selected = fields.status.value;
+      if (selected === "draft") return "draft";
+      if (selected === "scheduled") return "scheduled";
+      return "published";
     }
 
     function updatePreview(skipDraftSave = false) {
       const title = fields.title.value.trim() || "Untitled";
-      const date = fields.date.value || new Date().toISOString().slice(0, 10);
+      const date = fields.date.value || today;
       const description = fields.description.value.trim() || "short deck will appear here.";
       const slug = slugify(fields.title.value.trim() || "untitled");
       const body = fields.body.value;
       const words = countWords(body);
+      const minutes = readingMinutes(words);
       const isEditing = Boolean(fields.originalPath.value);
 
       entryUrl.textContent = `/journal/${date}-${slug}/`;
       wordCount.textContent = `${words} word${words === 1 ? "" : "s"}`;
+      readingTime.textContent = `${minutes} min read`;
+      statusChip.textContent = statusLabel();
       previewDate.textContent = `[${date}]`;
       previewTitle.textContent = title;
       previewDescription.textContent = description;
@@ -460,13 +674,22 @@ const today = new Date().toISOString().slice(0, 10);
         return;
       }
 
+      const counts = entries.reduce((acc, entry) => {
+        acc[entry.effectiveStatus] = (acc[entry.effectiveStatus] || 0) + 1;
+        return acc;
+      }, {});
+
       listContainer.innerHTML = entries
         .map((entry) => `
           <article class="admin-entry-card">
             <div class="admin-entry-copy">
-              <p class="entry-date">[${escapeHtml(entry.date)}]</p>
+              <div class="admin-entry-line">
+                <p class="entry-date">[${escapeHtml(entry.date)}]</p>
+                <span class="admin-status-pill" data-state="${escapeHtml(entry.effectiveStatus)}">${escapeHtml(entry.effectiveStatus)}</span>
+              </div>
               <h3 class="admin-entry-title">${escapeHtml(entry.title)}</h3>
               <p class="admin-entry-meta">${escapeHtml(entry.filename)}</p>
+              <p class="admin-entry-meta">${entry.wordCount} words · ${entry.readingMinutes} min · ${entry.revisionCount} revisions</p>
             </div>
             <div class="admin-entry-actions">
               <button class="provider-pill" type="button" data-edit-path="${escapeHtml(entry.path)}">edit</button>
@@ -475,6 +698,103 @@ const today = new Date().toISOString().slice(0, 10);
           </article>
         `)
         .join("");
+
+      if (libraryNote) {
+        libraryNote.textContent = `${entries.length} entries · ${counts.published || 0} published · ${counts.scheduled || 0} scheduled · ${counts.draft || 0} drafts`;
+      }
+    }
+
+    function renderRevisions(revisions) {
+      if (!revisionList) return;
+      if (!revisions.length) {
+        revisionList.innerHTML = "<p class='terminal-line'>no revisions yet for this entry.</p>";
+        return;
+      }
+
+      revisionList.innerHTML = revisions
+        .map((revision) => `
+          <article class="admin-revision-card">
+            <div class="admin-entry-line">
+              <p class="entry-date">${escapeHtml(revision.savedAtLabel)}</p>
+              <span class="admin-status-pill" data-state="${escapeHtml(revision.reason)}">${escapeHtml(revision.reason)}</span>
+            </div>
+            <h3 class="admin-entry-title">${escapeHtml(revision.title)}</h3>
+            <p class="admin-entry-meta">${revision.wordCount} words · ${escapeHtml(revision.filename)}</p>
+            <div class="admin-entry-actions">
+              <button class="provider-pill" type="button" data-restore-revision="${escapeHtml(revision.path)}">restore</button>
+            </div>
+          </article>
+        `)
+        .join("");
+
+      if (revisionNote) {
+        revisionNote.textContent = `${revisions.length} saved revisions`;
+      }
+    }
+
+    function renderPillGroup(target, items, formatter = (item) => item) {
+      if (!target) return;
+      if (!items.length) {
+        target.innerHTML = "<span class='admin-empty'>none</span>";
+        return;
+      }
+
+      target.innerHTML = items
+        .map((item) => `<button class="provider-pill admin-pill-action" type="button" data-tag-apply="${escapeHtml(typeof item === "string" ? item : item.tag)}">${escapeHtml(formatter(item))}</button>`)
+        .join("");
+    }
+
+    function renderWarnings(payload) {
+      if (!tagWarnings) return;
+      const warnings = [];
+      if (payload.weakTags?.length) {
+        warnings.push(`weak: ${payload.weakTags.join(", ")}`);
+      }
+      if (payload.duplicateTags?.length) {
+        warnings.push(`duplicate: ${payload.duplicateTags.join(", ")}`);
+      }
+
+      if (!warnings.length) {
+        tagWarnings.innerHTML = "<span class='admin-empty'>clean</span>";
+        return;
+      }
+
+      tagWarnings.innerHTML = warnings.map((item) => `<p>${escapeHtml(item)}</p>`).join("");
+    }
+
+    function renderAnalytics(payload) {
+      if (!analyticsContainer) return;
+
+      analyticsContainer.innerHTML = `
+        <div class="admin-analytics-cards">
+          <article class="admin-analytics-card"><strong>${payload.counts.total}</strong><span>entries</span></article>
+          <article class="admin-analytics-card"><strong>${payload.counts.published}</strong><span>published</span></article>
+          <article class="admin-analytics-card"><strong>${payload.counts.scheduled}</strong><span>scheduled</span></article>
+          <article class="admin-analytics-card"><strong>${payload.counts.drafts}</strong><span>drafts</span></article>
+          <article class="admin-analytics-card"><strong>${payload.counts.revisions}</strong><span>revisions</span></article>
+          <article class="admin-analytics-card"><strong>${payload.totals.imageCoverage}%</strong><span>with cover</span></article>
+        </div>
+        <div class="admin-analytics-grid">
+          <div class="admin-analytics-block">
+            <p class="admin-subtitle">totals</p>
+            <p>${payload.totals.words} words total</p>
+            <p>${payload.totals.averageWords} avg words</p>
+            <p>${payload.totals.averageReadingMinutes} avg min read</p>
+          </div>
+          <div class="admin-analytics-block">
+            <p class="admin-subtitle">top tags</p>
+            ${(payload.topTags || []).map((item) => `<p>${escapeHtml(item.tag)} <small>${item.count}</small></p>`).join("") || "<p class='admin-empty'>none</p>"}
+          </div>
+          <div class="admin-analytics-block">
+            <p class="admin-subtitle">longest entries</p>
+            ${(payload.longestEntries || []).map((item) => `<p>${escapeHtml(item.title)} <small>${item.wordCount}w</small></p>`).join("") || "<p class='admin-empty'>none</p>"}
+          </div>
+          <div class="admin-analytics-block">
+            <p class="admin-subtitle">recent cadence</p>
+            ${(payload.recentTimeline || []).map((item) => `<p>${escapeHtml(item.month)} <small>${item.count}</small></p>`).join("") || "<p class='admin-empty'>none</p>"}
+          </div>
+        </div>
+      `;
     }
 
     async function loadEntries() {
@@ -486,9 +806,6 @@ const today = new Date().toISOString().slice(0, 10);
 
       entries = data.entries || [];
       renderEntries();
-      if (libraryNote) {
-        libraryNote.textContent = `${entries.length} entries available`;
-      }
     }
 
     async function loadEntry(path) {
@@ -501,26 +818,72 @@ const today = new Date().toISOString().slice(0, 10);
       }
 
       const entry = data.entry;
-      const tags = Array.isArray(entry.tags)
-        ? entry.tags
-        : typeof entry.tags === "string" && entry.tags.trim()
-          ? entry.tags.split(",").map((item) => item.trim()).filter(Boolean)
-          : [];
+      const tags = Array.isArray(entry.tags) ? entry.tags : [];
+
       fields.originalPath.value = entry.path;
       fields.existingCoverImage.value = entry.coverImage || "";
+      fields.coverFocusX.value = `${entry.coverFocusX ?? 50}`;
+      fields.coverFocusY.value = `${entry.coverFocusY ?? 50}`;
+      fields.coverFocusXRange.value = `${entry.coverFocusX ?? 50}`;
+      fields.coverFocusYRange.value = `${entry.coverFocusY ?? 50}`;
       fields.title.value = entry.title || "";
       fields.date.value = entry.date || fields.date.value;
+      fields.status.value = entry.status || "published";
+      fields.publishAt.value = entry.publishAtInput || "";
       fields.description.value = entry.description || "";
       fields.tags.value = tags.join(", ");
       fields.coverAlt.value = entry.coverAlt || "";
       fields.coverCaption.value = entry.coverCaption || "";
       fields.body.value = entry.body || "";
-      fields.draft.checked = Boolean(entry.draft);
       fields.removeCoverImage.checked = false;
       currentRemoteImage = entry.coverImage || "";
       publishResult.hidden = true;
       updatePreview();
+      await Promise.all([loadRevisions(path), refreshTagIntelligence()]);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    async function loadRevisions(path) {
+      const response = await fetch(`/api/admin/revisions?path=${encodeURIComponent(path)}`, {
+        cache: "no-store"
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Could not load revisions.");
+      }
+      renderRevisions(data.revisions || []);
+    }
+
+    async function loadAnalytics() {
+      const response = await fetch("/api/admin/analytics", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Could not load analytics.");
+      }
+      renderAnalytics(data);
+    }
+
+    async function refreshTagIntelligence() {
+      const response = await fetch("/api/admin/tag-intelligence", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: fields.title.value,
+          description: fields.description.value,
+          tags: fields.tags.value.split(",").map((tag) => tag.trim()).filter(Boolean),
+          body: fields.body.value
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Could not load tag intelligence.");
+      }
+
+      renderPillGroup(tagSuggestions, data.suggestedTags || []);
+      renderPillGroup(recurringTerms, data.recurringTerms || []);
+      renderPillGroup(knownTags, data.knownTags || [], (item) => `${item.tag} (${item.count})`);
+      renderWarnings(data);
     }
 
     async function deleteEntry(path) {
@@ -546,7 +909,27 @@ const today = new Date().toISOString().slice(0, 10);
       }
 
       setMessage(`deleted: ${data.deleted}`);
-      await loadEntries();
+      await Promise.all([loadEntries(), loadAnalytics()]);
+    }
+
+    async function restoreRevision(path) {
+      if (!window.confirm("Restore this revision? Current version will be snapshotted first.")) return;
+
+      setMessage("restoring revision...");
+
+      const response = await fetch("/api/admin/revision/restore", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ revisionPath: path })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Restore failed.");
+      }
+
+      await Promise.all([loadEntries(), loadAnalytics(), loadEntry(data.entryPath)]);
+      setMessage("revision restored.");
     }
 
     async function refreshSession() {
@@ -554,7 +937,7 @@ const today = new Date().toISOString().slice(0, 10);
       const data = await response.json();
       setSessionState(Boolean(data.authenticated));
       if (data.authenticated) {
-        await loadEntries();
+        await Promise.all([loadEntries(), loadAnalytics(), refreshTagIntelligence()]);
       }
     }
 
@@ -576,7 +959,7 @@ const today = new Date().toISOString().slice(0, 10);
 
         passwordInput.value = "";
         setSessionState(true);
-        await loadEntries();
+        await Promise.all([loadEntries(), loadAnalytics(), refreshTagIntelligence()]);
       } catch (error) {
         setMessage(error.message || "Login failed.", true);
       } finally {
@@ -589,6 +972,24 @@ const today = new Date().toISOString().slice(0, 10);
       setSessionState(false);
     }
 
+    function prepareIntent(intent) {
+      const normalized = normalizeQuickIntent(intent);
+      fields.intent.value = normalized;
+
+      if (normalized === "draft") {
+        fields.status.value = "draft";
+        fields.publishAt.value = "";
+      } else if (normalized === "scheduled") {
+        fields.status.value = "scheduled";
+        if (!fields.publishAt.value) {
+          fields.publishAt.value = `${fields.date.value || today}T09:00`;
+        }
+      } else {
+        fields.status.value = "published";
+        fields.publishAt.value = "";
+      }
+    }
+
     async function publish(event) {
       event.preventDefault();
       submitButton.disabled = true;
@@ -597,7 +998,6 @@ const today = new Date().toISOString().slice(0, 10);
 
       try {
         const formData = new FormData(form);
-        formData.set("draft", formData.get("draft") ? "true" : "false");
         formData.set("removeCoverImage", formData.get("removeCoverImage") ? "true" : "false");
 
         const response = await fetch("/api/admin/publish", {
@@ -618,15 +1018,18 @@ const today = new Date().toISOString().slice(0, 10);
 
         localStorage.removeItem(storageKey);
         if (draftNote) {
-          draftNote.textContent = data.mode === "update"
-            ? "updated and cleared from local draft"
-            : "published and cleared from local draft";
+          draftNote.textContent = `${data.status} saved and local draft cleared`;
         }
 
+        const createdPath = data.path;
         resetFormState(true);
-        updatePreview(true);
-        await loadEntries();
-        setMessage(`${data.mode === "update" ? "updated" : "published"}: ${data.filename}`);
+        await Promise.all([loadEntries(), loadAnalytics()]);
+        if (createdPath) {
+          await loadEntry(createdPath);
+        } else {
+          updatePreview(true);
+        }
+        setMessage(`${data.mode === "update" ? "updated" : "saved"}: ${data.filename}`);
       } catch (error) {
         if (error.message === "Authentication required.") {
           setSessionState(false);
@@ -635,6 +1038,15 @@ const today = new Date().toISOString().slice(0, 10);
       } finally {
         submitButton.disabled = false;
       }
+    }
+
+    function scheduleTagRefresh() {
+      window.clearTimeout(tagTimer);
+      tagTimer = window.setTimeout(() => {
+        refreshTagIntelligence().catch(() => {
+          // silent
+        });
+      }, 500);
     }
 
     listContainer?.addEventListener("click", async (event) => {
@@ -656,6 +1068,39 @@ const today = new Date().toISOString().slice(0, 10);
       }
     });
 
+    revisionList?.addEventListener("click", async (event) => {
+      const target = event.target.closest("button[data-restore-revision]");
+      if (!target) return;
+      try {
+        await restoreRevision(target.dataset.restoreRevision);
+      } catch (error) {
+        setMessage(error.message || "Revision restore failed.", true);
+      }
+    });
+
+    [tagSuggestions, recurringTerms, knownTags].forEach((node) => {
+      node?.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-tag-apply]");
+        if (!target) return;
+        const value = target.dataset.tagApply;
+        const existing = fields.tags.value
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+
+        if (!existing.some((tag) => tag.toLocaleLowerCase("tr-TR") === value.toLocaleLowerCase("tr-TR"))) {
+          existing.push(value);
+          fields.tags.value = existing.join(", ");
+          updatePreview();
+          scheduleTagRefresh();
+        }
+      });
+    });
+
+    refreshTagsButton?.addEventListener("click", () => {
+      refreshTagIntelligence().catch((error) => setMessage(error.message || "Tag refresh failed.", true));
+    });
+
     loginButton?.addEventListener("click", login);
     passwordInput?.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -667,14 +1112,58 @@ const today = new Date().toISOString().slice(0, 10);
     resetFormButton?.addEventListener("click", () => {
       resetFormState();
       updatePreview();
+      refreshTagIntelligence().catch(() => {});
       setMessage("ready for a new entry.");
     });
     form?.addEventListener("submit", publish);
     clearDraftButton?.addEventListener("click", clearDraft);
 
+    document.querySelectorAll("[data-admin-quick]").forEach((button) => {
+      button.addEventListener("click", () => {
+        prepareIntent(button.dataset.adminQuick);
+        updatePreview();
+        form.requestSubmit();
+      });
+    });
+
+    fields.status?.addEventListener("change", () => {
+      if (fields.status.value === "scheduled" && !fields.publishAt.value) {
+        fields.publishAt.value = `${fields.date.value || today}T09:00`;
+      }
+      if (fields.status.value !== "scheduled") {
+        fields.publishAt.value = "";
+      }
+      updatePreview();
+    });
+
+    fields.coverFocusXRange?.addEventListener("input", () => {
+      setFocus(fields.coverFocusXRange.value, fields.coverFocusYRange.value);
+      saveDraft();
+    });
+
+    fields.coverFocusYRange?.addEventListener("input", () => {
+      setFocus(fields.coverFocusXRange.value, fields.coverFocusYRange.value);
+      saveDraft();
+    });
+
+    imageStage?.addEventListener("click", (event) => {
+      if (previewImage.hidden) return;
+      const rect = imageStage.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      setFocus(x, y);
+      saveDraft();
+    });
+
     Object.values(fields).forEach((field) => {
-      field?.addEventListener("input", updatePreview);
-      field?.addEventListener("change", updatePreview);
+      field?.addEventListener("input", () => {
+        updatePreview();
+        scheduleTagRefresh();
+      });
+      field?.addEventListener("change", () => {
+        updatePreview();
+        scheduleTagRefresh();
+      });
     });
 
     refreshSession().catch(() => {
@@ -683,6 +1172,8 @@ const today = new Date().toISOString().slice(0, 10);
     });
 
     restoreDraft();
+    setFocus(fields.coverFocusX.value, fields.coverFocusY.value);
     updatePreview();
+    refreshTagIntelligence().catch(() => {});
   })();
 </script>
