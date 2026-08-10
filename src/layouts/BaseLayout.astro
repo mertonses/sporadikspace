@@ -20,11 +20,10 @@ const {
   canonicalPath = Astro.url.pathname,
   type = "website",
   ogImage,
-  ogImageAlt = `${siteConfig.title} paylaşım görseli`
+  ogImageAlt = `${siteConfig.title} paylasim gorseli`
 } = Astro.props;
 
 const siteOrigin = Astro.site ?? new URL(Astro.url.origin);
-
 const canonicalUrl = new URL(canonicalPath, siteOrigin);
 const ogImageUrl = new URL(ogImage || "/og.svg", siteOrigin);
 const ogImageType = (() => {
@@ -35,30 +34,30 @@ const ogImageType = (() => {
   return "image/jpeg";
 })();
 
-const pageTitle =
-  title === siteConfig.title
-    ? title
-    : `${title} | ${siteConfig.title}`;
+const pageTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.title}`;
 ---
 
 <!doctype html>
-<html lang="tr" data-theme="system">
+<html lang="en" data-theme="system" data-locale="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <script is:inline>
       (() => {
-        const storageKey = "sporadikspace-theme";
+        const themeStorageKey = "sporadikspace-theme";
         const validThemes = ["light", "dark", "system"];
+        const browserLocale = (navigator.language || "en").toLowerCase().startsWith("tr") ? "tr" : "en";
 
         try {
-          const savedTheme = localStorage.getItem(storageKey);
-          document.documentElement.dataset.theme =
-            validThemes.includes(savedTheme) ? savedTheme : "system";
+          const savedTheme = localStorage.getItem(themeStorageKey);
+          document.documentElement.dataset.theme = validThemes.includes(savedTheme) ? savedTheme : "system";
         } catch {
           document.documentElement.dataset.theme = "system";
         }
+
+        document.documentElement.lang = browserLocale;
+        document.documentElement.dataset.locale = browserLocale;
       })();
     </script>
 
@@ -101,11 +100,131 @@ const pageTitle =
 
       <footer class="footer">
         <p>
-          source of truth: markdown files.
+          <span data-i18n="footer_source">source of truth: markdown files.</span>
           <span aria-hidden="true"> · </span>
-          <a href="/rss.xml">RSS</a>
+          <a href="/rss.xml" data-i18n="footer_rss">RSS</a>
         </p>
       </footer>
     </div>
   </body>
+
+  <script is:inline>
+    (() => {
+      const locale = document.documentElement.dataset.locale === "tr" ? "tr" : "en";
+
+      const dictionary = {
+        tr: {
+          nav_latest: "son yazilar",
+          nav_archive: "arsiv",
+          nav_search: "arama",
+          nav_subscribe: "abone ol",
+          footer_source: "kaynak dosyalar: markdown dosyalari.",
+          footer_rss: "RSS",
+          home_boot_1: "> sporadikspace baslatiliyor...",
+          home_boot_2: "> yazi dizini yukleniyor...",
+          home_boot_3: "> hazir.",
+          home_latest: "SON YAZILAR",
+          home_archive: "ARSIV",
+          tag_search: "arama",
+          tag_empty: "henuz etiket yok.",
+          archive_boot: "> arsiv dizini hazir.",
+          archive_title: "ARSIV",
+          subscribe_prompt: "> sporadikspace bultenine abone ol",
+          subscribe_title: "ABONE OL",
+          subscribe_email: "e-posta",
+          subscribe_button: "abone ol",
+          subscribe_unavailable: "abonelik su anda hazir degil.",
+          search_title: "ARAMA",
+          search_query: "sorgu",
+          search_placeholder: "> yazilarda ara",
+          search_idle: "yazmaya basla.",
+          search_unavailable: "arama dizini su an kullanilamiyor.",
+          search_no_match: "eslesen yazi yok.",
+          search_ready: "{count} yazi hazir.",
+          search_matches_one: "1 eslesme.",
+          search_matches_many: "{count} eslesme.",
+          journal_back: "< ana sayfaya don",
+          journal_share: "paylas",
+          journal_copy: "Kopyala",
+          journal_copied: "Kopyalandi",
+          admin_password: "sifre",
+          admin_unlock: "ac",
+          admin_new: "yeni yazi",
+          admin_lock: "kilitle",
+          admin_write: "yaz",
+          admin_library: "arsiv",
+          admin_publish: "yayinla",
+          admin_update: "guncelle",
+          admin_clear: "taslagi temizle"
+        },
+        en: {
+          nav_latest: "latest",
+          nav_archive: "archive",
+          nav_search: "search",
+          nav_subscribe: "subscribe",
+          footer_source: "source of truth: markdown files.",
+          footer_rss: "RSS",
+          home_boot_1: "> booting sporadikspace...",
+          home_boot_2: "> loading journal index...",
+          home_boot_3: "> ready.",
+          home_latest: "LATEST ENTRIES",
+          home_archive: "ARCHIVE",
+          tag_search: "search",
+          tag_empty: "no tags yet.",
+          archive_boot: "> archive index online.",
+          archive_title: "ARCHIVE",
+          subscribe_prompt: "> subscribe to sporadikspace",
+          subscribe_title: "SUBSCRIBE",
+          subscribe_email: "email",
+          subscribe_button: "subscribe",
+          subscribe_unavailable: "subscription is not available yet.",
+          search_title: "SEARCH",
+          search_query: "query",
+          search_placeholder: "> search the log",
+          search_idle: "type to begin.",
+          search_unavailable: "search index unavailable.",
+          search_no_match: "no matching entries.",
+          search_ready: "{count} indexed entries ready.",
+          search_matches_one: "1 match.",
+          search_matches_many: "{count} matches.",
+          journal_back: "< return to index",
+          journal_share: "share",
+          journal_copy: "Copy",
+          journal_copied: "Copied",
+          admin_password: "password",
+          admin_unlock: "unlock",
+          admin_new: "new entry",
+          admin_lock: "lock",
+          admin_write: "write",
+          admin_library: "library",
+          admin_publish: "publish",
+          admin_update: "update",
+          admin_clear: "clear local draft"
+        }
+      };
+
+      const t = (key, vars = {}) => {
+        const raw = dictionary[locale]?.[key] || dictionary.en[key] || key;
+        return Object.entries(vars).reduce(
+          (value, [name, replacement]) => value.replaceAll(`{${name}}`, String(replacement)),
+          raw
+        );
+      };
+
+      document.querySelectorAll("[data-i18n]").forEach((node) => {
+        node.textContent = t(node.dataset.i18n);
+      });
+
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+        node.setAttribute("placeholder", t(node.dataset.i18nPlaceholder));
+      });
+
+      document.querySelectorAll("[data-i18n-aria-label]").forEach((node) => {
+        node.setAttribute("aria-label", t(node.dataset.i18nAriaLabel));
+      });
+
+      window.__sporadikLocale = locale;
+      window.__sporadikT = t;
+    })();
+  </script>
 </html>

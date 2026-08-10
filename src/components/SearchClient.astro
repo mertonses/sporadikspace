@@ -3,20 +3,21 @@ const source = "/search-index.json";
 ---
 
 <section class="terminal-block search-block" aria-labelledby="search-heading">
-  <h1 id="search-heading" class="screen-title">SEARCH</h1>
+  <h1 id="search-heading" class="screen-title" data-i18n="search_title">SEARCH</h1>
   <p class="terminal-line">&gt; title / content / tags</p>
 
-  <label class="search-label" for="search-input">query</label>
+  <label class="search-label" for="search-input" data-i18n="search_query">query</label>
   <input
     id="search-input"
     class="search-input"
     type="search"
     name="q"
     placeholder="> search the log"
+    data-i18n-placeholder="search_placeholder"
     autocomplete="off"
   />
 
-  <div class="search-status" id="search-status">type to begin.</div>
+  <div class="search-status" id="search-status" data-i18n="search_idle">type to begin.</div>
   <ul class="entry-list search-results" id="search-results"></ul>
 </section>
 
@@ -25,6 +26,17 @@ const source = "/search-index.json";
   const list = document.getElementById("search-results");
   const status = document.getElementById("search-status");
   const params = new URLSearchParams(window.location.search);
+  const t = window.__sporadikT || ((key, vars = {}) => {
+    const messages = {
+      search_idle: "type to begin.",
+      search_unavailable: "search index unavailable.",
+      search_no_match: "no matching entries.",
+      search_ready: "{count} indexed entries ready.",
+      search_matches_one: "1 match.",
+      search_matches_many: "{count} matches."
+    };
+    return Object.entries(vars).reduce((value, [name, replacement]) => value.replaceAll(`{${name}}`, String(replacement)), messages[key] || key);
+  });
 
   let entries = [];
 
@@ -32,20 +44,20 @@ const source = "/search-index.json";
     try {
       const response = await fetch(source);
       entries = await response.json();
-      status.textContent = `${entries.length} indexed entries ready.`;
+      status.textContent = t("search_ready", { count: entries.length });
     } catch {
-      status.textContent = "search index unavailable.";
+      status.textContent = t("search_unavailable");
     }
   }
 
   function render(items) {
     list.innerHTML = "";
     if (!items.length) {
-      status.textContent = "no matching entries.";
+      status.textContent = t("search_no_match");
       return;
     }
 
-    status.textContent = `${items.length} match${items.length === 1 ? "" : "es"}.`;
+    status.textContent = items.length === 1 ? t("search_matches_one") : t("search_matches_many", { count: items.length });
 
     for (const item of items) {
       const li = document.createElement("li");
@@ -65,7 +77,7 @@ const source = "/search-index.json";
     const query = event.target.value.trim().toLowerCase();
     if (!query) {
       list.innerHTML = "";
-      status.textContent = `${entries.length} indexed entries ready.`;
+      status.textContent = t("search_ready", { count: entries.length });
       const nextUrl = new URL(window.location.href);
       nextUrl.searchParams.delete("q");
       window.history.replaceState({}, "", nextUrl);

@@ -17,6 +17,6 @@ export async function GET(context: { site: string | undefined }) {
       link: entryUrl(entry),
       categories: entry.data.tags
     })),
-    customData: `<language>en</language>`
+    customData: `<language>tr</language>`
   });
 }

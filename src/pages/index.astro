@@ -16,21 +16,21 @@ const hasTags = tags.length > 0;
   <div class:list={["home-grid", { "no-sidebar": !hasTags }]}>
     <div class="home-main">
       <section class="terminal-block">
-        <p class="boot-line">&gt; booting sporadikspace...</p>
-        <p class="boot-line">&gt; loading journal index...</p>
-        <p class="boot-line">&gt; ready.</p>
+        <p class="boot-line" data-i18n="home_boot_1">&gt; booting sporadikspace...</p>
+        <p class="boot-line" data-i18n="home_boot_2">&gt; loading journal index...</p>
+        <p class="boot-line" data-i18n="home_boot_3">&gt; ready.</p>
       </section>
 
       <section class="terminal-block" aria-labelledby="latest-heading">
         <div class="section-head">
-          <h1 id="latest-heading" class="screen-title">LATEST ENTRIES</h1>
+          <h1 id="latest-heading" class="screen-title" data-i18n="home_latest">LATEST ENTRIES</h1>
           <a class="terminal-link" href="/rss.xml">rss.xml</a>
         </div>
         <EntryList entries={latestEntries} showDescription={true} />
       </section>
 
       <section class="terminal-block" aria-labelledby="archive-heading">
-        <h2 id="archive-heading" class="screen-title">ARCHIVE</h2>
+        <h2 id="archive-heading" class="screen-title" data-i18n="home_archive">ARCHIVE</h2>
         <ul class="archive-index" role="list">
           {
             archiveCounts.map(({ year, count }) => (

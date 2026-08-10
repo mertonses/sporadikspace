@@ -15,11 +15,11 @@ export type SubscriptionProvider = {
 };
 
 export function getSubscriptionProviders(): SubscriptionProvider[] {
-  const buttondownUsername = import.meta.env.PUBLIC_BUTTONDOWN_USERNAME ?? "";
+  const buttondownUsername = import.meta.env.PUBLIC_BUTTONDOWN_USERNAME ?? "sporadik";
   const buttondownAction =
     import.meta.env.PUBLIC_BUTTONDOWN_ACTION ??
     (buttondownUsername
-      ? `https://buttondown.email/api/emails/embed-subscribe/${buttondownUsername}`
+      ? `https://buttondown.com/api/emails/embed-subscribe/${buttondownUsername}`
       : "");
   const beehiivAction = import.meta.env.PUBLIC_BEEHIIV_ACTION ?? "";
   const convertKitAction = import.meta.env.PUBLIC_CONVERTKIT_ACTION ?? "";

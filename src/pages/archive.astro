@@ -11,11 +11,11 @@ const archive = groupArchive(entries);
 
 <BaseLayout title="Archive" description={siteConfig.description}>
   <section class="terminal-block">
-    <p class="terminal-line">&gt; archive index online.</p>
+    <p class="terminal-line" data-i18n="archive_boot">&gt; archive index online.</p>
   </section>
 
   <section class="terminal-block" aria-labelledby="archive-title">
-    <h1 id="archive-title" class="screen-title">ARCHIVE</h1>
+    <h1 id="archive-title" class="screen-title" data-i18n="archive_title">ARCHIVE</h1>
 
     {
       archive.map((yearGroup) => (

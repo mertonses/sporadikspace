@@ -27,6 +27,7 @@ const isCurrent = (href: string) => {
           <a
             href="/"
             aria-current={isCurrent("/") ? "page" : undefined}
+            data-i18n="nav_latest"
           >
             latest
           </a>
@@ -36,6 +37,7 @@ const isCurrent = (href: string) => {
           <a
             href="/archive"
             aria-current={isCurrent("/archive") ? "page" : undefined}
+            data-i18n="nav_archive"
           >
             archive
           </a>
@@ -45,6 +47,7 @@ const isCurrent = (href: string) => {
           <a
             href="/search"
             aria-current={isCurrent("/search") ? "page" : undefined}
+            data-i18n="nav_search"
           >
             search
           </a>
@@ -54,6 +57,7 @@ const isCurrent = (href: string) => {
           <a
             href="/subscribe"
             aria-current={isCurrent("/subscribe") ? "page" : undefined}
+            data-i18n="nav_subscribe"
           >
             subscribe
           </a>

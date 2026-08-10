@@ -12,11 +12,11 @@ const activeProvider = providers.find((provider) => provider.enabled);
   description={siteConfig.description}
 >
   <section class="terminal-block">
-    <p class="terminal-line">&gt; subscribe to sporadikspace</p>
+    <p class="terminal-line" data-i18n="subscribe_prompt">&gt; subscribe to sporadikspace</p>
   </section>
 
   <section class="terminal-block" aria-labelledby="subscribe-title">
-    <h1 id="subscribe-title" class="screen-title">SUBSCRIBE</h1>
+    <h1 id="subscribe-title" class="screen-title" data-i18n="subscribe_title">SUBSCRIBE</h1>
 
     {
       activeProvider ? (
@@ -33,7 +33,7 @@ const activeProvider = providers.find((provider) => provider.enabled);
           }
 
           <label class="sr-only" for="subscriber-email">
-            email
+            <span data-i18n="subscribe_email">email</span>
           </label>
 
           <input
@@ -45,12 +45,12 @@ const activeProvider = providers.find((provider) => provider.enabled);
             required
           />
 
-          <button class="submit-button" type="submit">
+          <button class="submit-button" type="submit" data-i18n="subscribe_button">
             subscribe
           </button>
         </form>
       ) : (
-        <p class="terminal-line">subscription is not available yet.</p>
+        <p class="terminal-line" data-i18n="subscribe_unavailable">subscription is not available yet.</p>
       )
     }
   </section>

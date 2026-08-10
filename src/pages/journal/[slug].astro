@@ -41,7 +41,7 @@ const shareText = `${shareTitle} - sporadik.space`;
   ogImageAlt={entry.data.coverAlt || entryTitle(entry)}
 >
   <article class="terminal-block">
-    <a href="/" class="terminal-link back-link">&lt; return to index</a>
+    <a href="/" class="terminal-link back-link" data-i18n="journal_back">&lt; return to index</a>
     <h1 class="post-title">{entryTitle(entry)}</h1>
     <div class="post-meta">
       <span>[{formatDate(entryDate(entry))}]</span>
@@ -70,7 +70,7 @@ const shareText = `${shareTitle} - sporadik.space`;
     </div>
 
     <div class="post-share" aria-label="Share this entry">
-      <span class="post-share-label">share</span>
+      <span class="post-share-label" data-i18n="journal_share">share</span>
       <a
         class="post-share-link"
         href={`https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
@@ -95,7 +95,7 @@ const shareText = `${shareTitle} - sporadik.space`;
       >
         WhatsApp
       </a>
-      <button class="post-share-link post-share-copy" type="button" data-copy-share={shareUrl}>
+      <button class="post-share-link post-share-copy" type="button" data-copy-share={shareUrl} data-i18n="journal_copy">
         Copy
       </button>
     </div>
@@ -140,6 +140,7 @@ const shareText = `${shareTitle} - sporadik.space`;
     (() => {
       const copyButton = document.querySelector("[data-copy-share]");
       if (!copyButton) return;
+      const t = window.__sporadikT || ((key) => ({ journal_copy: "Copy", journal_copied: "Copied" }[key] || key));
 
       copyButton.addEventListener("click", async () => {
         const shareUrl = copyButton.dataset.copyShare;
@@ -147,14 +148,14 @@ const shareText = `${shareTitle} - sporadik.space`;
 
         try {
           await navigator.clipboard.writeText(shareUrl);
-          copyButton.textContent = "Copied";
+          copyButton.textContent = t("journal_copied");
           window.setTimeout(() => {
-            copyButton.textContent = "Copy";
+            copyButton.textContent = t("journal_copy");
           }, 1400);
         } catch {
-          copyButton.textContent = "Failed";
+          copyButton.textContent = t("journal_copy");
           window.setTimeout(() => {
-            copyButton.textContent = "Copy";
+            copyButton.textContent = t("journal_copy");
           }, 1400);
         }
       });

@@ -23,9 +23,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       <p class="muted admin-note">private route for sporadik.space</p>
     </div>
 
-    <div class="admin-shell">
+    <div class="admin-shell" data-admin-shell data-admin-ready="false">
       <div class="admin-auth" data-admin-auth>
-        <label class="search-label" for="admin-password">password</label>
+        <label class="search-label" for="admin-password" data-i18n="admin_password">password</label>
         <div class="admin-inline">
           <input
             id="admin-password"
@@ -33,8 +33,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
             type="password"
             autocomplete="current-password"
             placeholder="enter admin password"
+            data-i18n-placeholder="admin_password"
           />
-          <button class="submit-button" type="button" data-admin-login>unlock</button>
+          <button class="submit-button" type="button" data-admin-login data-i18n="admin_unlock">unlock</button>
         </div>
       </div>
 
@@ -42,8 +43,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         <div class="admin-inline admin-toolbar">
           <p class="terminal-line admin-status" data-admin-status>session ready.</p>
           <div class="admin-toolbar-actions">
-            <button class="provider-pill" type="button" data-admin-reset-form>new entry</button>
-            <button class="provider-pill" type="button" data-admin-logout>lock</button>
+            <button class="provider-pill" type="button" data-admin-reset-form data-i18n="admin_new">new entry</button>
+            <button class="provider-pill" type="button" data-admin-logout data-i18n="admin_lock">lock</button>
           </div>
         </div>
 
@@ -58,8 +59,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         </div>
 
         <div class="admin-tabs" role="tablist" aria-label="Admin sections">
-          <button class="provider-pill active" type="button" role="tab" aria-selected="true" data-admin-tab="write">write</button>
-          <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="library">library</button>
+          <button class="provider-pill active" type="button" role="tab" aria-selected="true" data-admin-tab="write" data-i18n="admin_write">write</button>
+          <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="library" data-i18n="admin_library">library</button>
         </div>
 
         <form class="admin-form" data-admin-form>
@@ -227,8 +228,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
           </section>
 
           <div class="admin-inline admin-actions">
-            <button class="submit-button" type="submit" data-admin-submit>publish</button>
-            <button class="provider-pill" type="button" data-admin-clear-draft>clear local draft</button>
+            <button class="submit-button" type="submit" data-admin-submit data-i18n="admin_publish">publish</button>
+            <button class="provider-pill" type="button" data-admin-clear-draft data-i18n="admin_clear">clear local draft</button>
             <p class="terminal-line admin-feedback" data-admin-feedback></p>
           </div>
         </form>
@@ -240,6 +241,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 <script is:inline define:vars={{ today, nowLocal }}>
   (() => {
     const storageKey = "sporadikspace-admin-draft-v4";
+    const shell = document.querySelector("[data-admin-shell]");
     const authBlock = document.querySelector("[data-admin-auth]");
     const panel = document.querySelector("[data-admin-panel]");
     const passwordInput = document.querySelector("#admin-password");
@@ -309,6 +311,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       authBlock.hidden = authenticated;
       panel.hidden = !authenticated;
       status.textContent = authenticated ? "session ready." : "locked.";
+      shell.dataset.adminReady = "true";
       setMessage("");
     }
 
@@ -868,6 +871,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     restoreDraft();
     updatePreview(true);
     updateImagePreviewFromRemote();
-    verifySession();
+    verifySession().catch(() => {
+      shell.dataset.adminReady = "true";
+      setAuthenticated(false);
+    });
   })();
 </script>

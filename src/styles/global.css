@@ -795,6 +795,15 @@ img {
   gap: 1rem;
 }
 
+.admin-shell[data-admin-ready="false"] .admin-auth,
+.admin-shell[data-admin-ready="false"] .admin-panel {
+  display: none;
+}
+
+.admin-shell[data-admin-ready="false"] {
+  min-height: 8rem;
+}
+
 .admin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

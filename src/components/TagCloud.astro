@@ -16,7 +16,7 @@ const { items } = Astro.props;
 <aside class="tag-cloud-block" aria-labelledby="tags-heading">
   <div class="section-head tag-cloud-head">
     <h2 id="tags-heading" class="screen-title">Etiketler</h2>
-    <a class="terminal-link tag-cloud-link" href="/search">search</a>
+    <a class="terminal-link tag-cloud-link" href="/search" data-i18n="tag_search">search</a>
   </div>
 
   {
@@ -35,7 +35,7 @@ const { items } = Astro.props;
         ))}
       </div>
     ) : (
-      <p class="terminal-line">henüz etiket yok.</p>
+      <p class="terminal-line" data-i18n="tag_empty">henuz etiket yok.</p>
     )
   }
 </aside>
