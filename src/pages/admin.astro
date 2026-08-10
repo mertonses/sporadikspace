@@ -34,56 +34,44 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
             autocomplete="current-password"
             placeholder="enter admin password"
           />
-
-          <button class="submit-button" type="button" data-admin-login>
-            unlock
-          </button>
+          <button class="submit-button" type="button" data-admin-login>unlock</button>
         </div>
       </div>
 
       <div class="admin-panel" data-admin-panel hidden>
         <div class="admin-inline admin-toolbar">
-          <p class="terminal-line admin-status" data-admin-status>
-            session ready.
-          </p>
-
+          <p class="terminal-line admin-status" data-admin-status>session ready.</p>
           <div class="admin-toolbar-actions">
-            <button class="provider-pill" type="button" data-admin-reset-form>
-              new entry
-            </button>
-
-            <button class="provider-pill" type="button" data-admin-logout>
-              lock
-            </button>
+            <button class="provider-pill" type="button" data-admin-reset-form>new entry</button>
+            <button class="provider-pill" type="button" data-admin-logout>lock</button>
           </div>
         </div>
 
-        <div class="admin-dashboard-grid">
-          <form class="admin-form" data-admin-form>
-            <input type="hidden" name="originalPath" value="" />
-            <input type="hidden" name="existingCoverImage" value="" />
-            <input type="hidden" name="coverFocusX" value="50" />
-            <input type="hidden" name="coverFocusY" value="50" />
-            <input type="hidden" name="intent" value="published" />
+        <div class="admin-summary">
+          <p class="admin-summary-label" data-admin-mode-label>new entry</p>
+          <p class="admin-summary-value" data-admin-entry-url>/journal/{today}-untitled/</p>
+          <div class="admin-summary-meta-row">
+            <p class="admin-summary-meta" data-admin-word-count>0 words</p>
+            <p class="admin-summary-meta" data-admin-reading-time>1 min read</p>
+            <p class="admin-summary-meta" data-admin-status-chip>published</p>
+          </div>
+        </div>
 
-            <div class="admin-summary">
-              <p class="admin-summary-label" data-admin-mode-label>new entry</p>
-              <p class="admin-summary-value" data-admin-entry-url>
-                /journal/{today}-untitled/
-              </p>
-              <div class="admin-summary-meta-row">
-                <p class="admin-summary-meta" data-admin-word-count>
-                  0 words
-                </p>
-                <p class="admin-summary-meta" data-admin-reading-time>
-                  1 min read
-                </p>
-                <p class="admin-summary-meta" data-admin-status-chip>
-                  published
-                </p>
-              </div>
-            </div>
+        <div class="admin-tabs" role="tablist" aria-label="Admin sections">
+          <button class="provider-pill active" type="button" role="tab" aria-selected="true" data-admin-tab="write">write</button>
+          <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="cover">cover</button>
+          <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="insights">insights</button>
+          <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="library">library</button>
+        </div>
 
+        <form class="admin-form" data-admin-form>
+          <input type="hidden" name="originalPath" value="" />
+          <input type="hidden" name="existingCoverImage" value="" />
+          <input type="hidden" name="coverFocusX" value="50" />
+          <input type="hidden" name="coverFocusY" value="50" />
+          <input type="hidden" name="intent" value="published" />
+
+          <section class="admin-tab-panel active" data-admin-panel-name="write" role="tabpanel">
             <div class="admin-grid">
               <label>
                 <span class="search-label">title</span>
@@ -108,68 +96,55 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
               <label>
                 <span class="search-label">publish at</span>
-                <input
-                  class="search-input"
-                  type="datetime-local"
-                  name="publishAt"
-                  value={nowLocal}
-                />
+                <input class="search-input" type="datetime-local" name="publishAt" value={nowLocal} />
               </label>
             </div>
 
             <label>
               <span class="search-label">description</span>
-              <input
-                class="search-input"
-                type="text"
-                name="description"
-                placeholder="short deck for homepage and meta"
-              />
+              <input class="search-input" type="text" name="description" placeholder="short deck for homepage and meta" />
             </label>
 
             <label>
               <span class="search-label">tags</span>
-              <input
-                class="search-input"
-                type="text"
-                name="tags"
-                placeholder="deneme, notlar, gözlem"
-              />
+              <input class="search-input" type="text" name="tags" placeholder="deneme, notlar, gozlem" />
             </label>
 
-            <section class="admin-subpanel" aria-labelledby="admin-tag-title">
+            <label>
+              <span class="search-label">body</span>
+              <textarea class="search-input admin-textarea" name="body" placeholder="write in markdown..." required></textarea>
+            </label>
+
+            <div class="admin-subpanel admin-subpanel-quick">
               <div class="section-head">
-                <h2 id="admin-tag-title" class="screen-title">TAG INTELLIGENCE</h2>
-                <button class="provider-pill" type="button" data-admin-refresh-tags>
-                  refresh
-                </button>
+                <h2 class="screen-title">QUICK ACTIONS</h2>
+                <p class="muted admin-note">one-tap save, schedule or publish</p>
               </div>
-
-              <div class="admin-tag-grid">
-                <div>
-                  <p class="admin-subtitle">suggested</p>
-                  <div class="admin-pill-list" data-admin-tag-suggestions></div>
-                </div>
-
-                <div>
-                  <p class="admin-subtitle">recurring terms</p>
-                  <div class="admin-pill-list admin-pill-list-muted" data-admin-recurring-terms></div>
-                </div>
+              <div class="admin-quick-actions">
+                <button class="provider-pill" type="button" data-admin-quick="draft">save draft</button>
+                <button class="provider-pill" type="button" data-admin-quick="scheduled">schedule</button>
+                <button class="submit-button" type="button" data-admin-quick="published">publish now</button>
               </div>
+            </div>
 
-              <div class="admin-tag-grid">
-                <div>
-                  <p class="admin-subtitle">known site tags</p>
-                  <div class="admin-pill-list" data-admin-known-tags></div>
+            <details class="admin-details" open>
+              <summary>preview</summary>
+              <article class="admin-preview-card">
+                <p class="entry-date" data-admin-preview-date>[{today}]</p>
+                <h3 class="admin-preview-title" data-admin-preview-title-text>Untitled</h3>
+                <p class="entry-description" data-admin-preview-description>short deck will appear here.</p>
+                <div class="admin-preview-body post-body" data-admin-preview-body>
+                  <p>write in markdown and the preview will update here.</p>
                 </div>
-
-                <div>
-                  <p class="admin-subtitle">warnings</p>
-                  <div class="admin-list-compact" data-admin-tag-warnings></div>
+                <div class="admin-publish-result" data-admin-publish-result hidden>
+                  <p class="terminal-line">published successfully.</p>
+                  <a class="terminal-link" href="#" target="_blank" rel="noreferrer" data-admin-live-link>open live post</a>
                 </div>
-              </div>
-            </section>
+              </article>
+            </details>
+          </section>
 
+          <section class="admin-tab-panel" data-admin-panel-name="cover" role="tabpanel" hidden>
             <label>
               <span class="search-label">cover image</span>
               <input class="search-input admin-file" type="file" name="image" accept="image/*" />
@@ -182,19 +157,23 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               </div>
               <figcaption>
                 <span data-admin-image-preview-caption>cover preview</span>
-                <span class="admin-focus-readout" data-admin-focus-readout>50 / 50</span>
+                <span class="admin-focus-readout" data-admin-focus-readout>center</span>
               </figcaption>
             </figure>
 
-            <div class="admin-grid admin-grid-tight">
-              <label>
-                <span class="search-label">focus x</span>
-                <input class="search-input" type="range" min="0" max="100" step="1" name="coverFocusXRange" value="50" />
-              </label>
-              <label>
-                <span class="search-label">focus y</span>
-                <input class="search-input" type="range" min="0" max="100" step="1" name="coverFocusYRange" value="50" />
-              </label>
+            <div class="admin-subpanel">
+              <div class="section-head">
+                <h2 class="screen-title">CROP PRESETS</h2>
+                <p class="muted admin-note">or tap the image for a custom point</p>
+              </div>
+              <div class="admin-pill-list" data-admin-focus-presets>
+                <button class="provider-pill active" type="button" data-focus-preset="center">center</button>
+                <button class="provider-pill" type="button" data-focus-preset="portrait">portrait</button>
+                <button class="provider-pill" type="button" data-focus-preset="top">top</button>
+                <button class="provider-pill" type="button" data-focus-preset="bottom">bottom</button>
+                <button class="provider-pill" type="button" data-focus-preset="left">left</button>
+                <button class="provider-pill" type="button" data-focus-preset="right">right</button>
+              </div>
             </div>
 
             <label class="admin-checkbox">
@@ -205,128 +184,85 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
             <div class="admin-grid">
               <label>
                 <span class="search-label">cover alt</span>
-                <input
-                  class="search-input"
-                  type="text"
-                  name="coverAlt"
-                  placeholder="short image description"
-                />
+                <input class="search-input" type="text" name="coverAlt" placeholder="short image description" />
               </label>
 
               <label>
                 <span class="search-label">cover caption</span>
-                <input
-                  class="search-input"
-                  type="text"
-                  name="coverCaption"
-                  placeholder="optional caption"
-                />
+                <input class="search-input" type="text" name="coverCaption" placeholder="optional caption" />
               </label>
             </div>
+          </section>
 
-            <label>
-              <span class="search-label">body</span>
-              <textarea
-                class="search-input admin-textarea"
-                name="body"
-                placeholder="write in markdown..."
-                required
-              ></textarea>
-            </label>
-
-            <div class="admin-subpanel admin-subpanel-quick">
-              <div class="section-head">
-                <h2 class="screen-title">QUICK ACTIONS</h2>
-                <p class="muted admin-note">draft, schedule or publish instantly</p>
-              </div>
-
-              <div class="admin-quick-actions">
-                <button class="provider-pill" type="button" data-admin-quick="draft">
-                  save draft
-                </button>
-                <button class="provider-pill" type="button" data-admin-quick="scheduled">
-                  schedule
-                </button>
-                <button class="submit-button" type="button" data-admin-quick="published">
-                  publish now
-                </button>
-              </div>
-            </div>
-
-            <div class="admin-inline admin-actions">
-              <button class="submit-button" type="submit" data-admin-submit>
-                publish
-              </button>
-              <button class="provider-pill" type="button" data-admin-clear-draft>
-                clear local draft
-              </button>
-              <p class="terminal-line admin-feedback" data-admin-feedback></p>
-            </div>
-          </form>
-
-          <div class="admin-side-stack">
-            <section class="admin-preview" aria-labelledby="admin-preview-title">
-              <div class="section-head">
-                <h2 id="admin-preview-title" class="screen-title">PREVIEW</h2>
-                <p class="muted admin-note" data-admin-draft-note>
-                  local draft autosaves on this device
-                </p>
-              </div>
-
-              <article class="admin-preview-card">
-                <p class="entry-date" data-admin-preview-date>[{today}]</p>
-                <h3 class="admin-preview-title" data-admin-preview-title-text>Untitled</h3>
-                <p class="entry-description" data-admin-preview-description>
-                  short deck will appear here.
-                </p>
-                <div class="admin-preview-body post-body" data-admin-preview-body>
-                  <p>write in markdown and the preview will update here.</p>
+          <section class="admin-tab-panel" data-admin-panel-name="insights" role="tabpanel" hidden>
+            <details class="admin-details">
+              <summary>tag intelligence</summary>
+              <div class="admin-subpanel admin-details-body">
+                <div class="admin-inline admin-inline-between">
+                  <p class="muted admin-note">suggestions from current draft</p>
+                  <button class="provider-pill" type="button" data-admin-refresh-tags>refresh</button>
                 </div>
-                <div class="admin-publish-result" data-admin-publish-result hidden>
-                  <p class="terminal-line">published successfully.</p>
-                  <a class="terminal-link" href="#" target="_blank" rel="noreferrer" data-admin-live-link>
-                    open live post
-                  </a>
+
+                <div class="admin-tag-grid">
+                  <div>
+                    <p class="admin-subtitle">suggested</p>
+                    <div class="admin-pill-list" data-admin-tag-suggestions></div>
+                  </div>
+                  <div>
+                    <p class="admin-subtitle">recurring terms</p>
+                    <div class="admin-pill-list admin-pill-list-muted" data-admin-recurring-terms></div>
+                  </div>
                 </div>
-              </article>
-            </section>
 
-            <section class="admin-library" aria-labelledby="admin-revision-title">
-              <div class="section-head">
-                <h2 id="admin-revision-title" class="screen-title">REVISION HISTORY</h2>
-                <p class="muted admin-note" data-admin-revision-note>
-                  load an entry to inspect revisions
-                </p>
+                <div class="admin-tag-grid">
+                  <div>
+                    <p class="admin-subtitle">known site tags</p>
+                    <div class="admin-pill-list" data-admin-known-tags></div>
+                  </div>
+                  <div>
+                    <p class="admin-subtitle">warnings</p>
+                    <div class="admin-list-compact" data-admin-tag-warnings></div>
+                  </div>
+                </div>
               </div>
-              <div class="admin-revision-list" data-admin-revision-list>
-                <p class="terminal-line">no entry loaded yet.</p>
-              </div>
-            </section>
+            </details>
 
-            <section class="admin-library" aria-labelledby="admin-analytics-title">
-              <div class="section-head">
-                <h2 id="admin-analytics-title" class="screen-title">MICRO ANALYTICS</h2>
-                <p class="muted admin-note">editorial overview</p>
+            <details class="admin-details" open>
+              <summary>revision history</summary>
+              <div class="admin-details-body">
+                <p class="muted admin-note" data-admin-revision-note>load an entry to inspect revisions</p>
+                <div class="admin-revision-list" data-admin-revision-list>
+                  <p class="terminal-line">no entry loaded yet.</p>
+                </div>
               </div>
-              <div class="admin-analytics" data-admin-analytics>
-                <p class="terminal-line">loading analytics...</p>
+            </details>
+
+            <details class="admin-details" open>
+              <summary>micro analytics</summary>
+              <div class="admin-details-body">
+                <div class="admin-analytics" data-admin-analytics>
+                  <p class="terminal-line">loading analytics...</p>
+                </div>
               </div>
-            </section>
+            </details>
+          </section>
+
+          <section class="admin-tab-panel" data-admin-panel-name="library" role="tabpanel" hidden>
+            <div class="section-head">
+              <h2 class="screen-title">EXISTING ENTRIES</h2>
+              <p class="muted admin-note" data-admin-library-note>tap an entry to edit or delete</p>
+            </div>
+            <div class="admin-entry-list" data-admin-entry-list>
+              <p class="terminal-line">loading entries...</p>
+            </div>
+          </section>
+
+          <div class="admin-inline admin-actions">
+            <button class="submit-button" type="submit" data-admin-submit>publish</button>
+            <button class="provider-pill" type="button" data-admin-clear-draft>clear local draft</button>
+            <p class="terminal-line admin-feedback" data-admin-feedback></p>
           </div>
-        </div>
-
-        <section class="admin-library" aria-labelledby="admin-library-title">
-          <div class="section-head">
-            <h2 id="admin-library-title" class="screen-title">EXISTING ENTRIES</h2>
-            <p class="muted admin-note" data-admin-library-note>
-              tap an entry to edit or delete
-            </p>
-          </div>
-
-          <div class="admin-entry-list" data-admin-entry-list>
-            <p class="terminal-line">loading entries...</p>
-          </div>
-        </section>
+        </form>
       </div>
     </div>
   </section>
@@ -334,7 +270,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
 <script is:inline define:vars={{ today, nowLocal }}>
   (() => {
-    const storageKey = "sporadikspace-admin-draft-v2";
+    const storageKey = "sporadikspace-admin-draft-v3";
     const authBlock = document.querySelector("[data-admin-auth]");
     const panel = document.querySelector("[data-admin-panel]");
     const passwordInput = document.querySelector("#admin-password");
@@ -362,7 +298,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     const focusReadout = document.querySelector("[data-admin-focus-readout]");
     const publishResult = document.querySelector("[data-admin-publish-result]");
     const liveLink = document.querySelector("[data-admin-live-link]");
-    const draftNote = document.querySelector("[data-admin-draft-note]");
     const modeLabel = document.querySelector("[data-admin-mode-label]");
     const listContainer = document.querySelector("[data-admin-entry-list]");
     const libraryNote = document.querySelector("[data-admin-library-note]");
@@ -374,6 +309,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     const knownTags = document.querySelector("[data-admin-known-tags]");
     const tagWarnings = document.querySelector("[data-admin-tag-warnings]");
     const refreshTagsButton = document.querySelector("[data-admin-refresh-tags]");
+    const tabButtons = [...document.querySelectorAll("[data-admin-tab]")];
+    const tabPanels = [...document.querySelectorAll("[data-admin-panel-name]")];
+    const focusPresetButtons = [...document.querySelectorAll("[data-focus-preset]")];
 
     if (!form) return;
 
@@ -382,8 +320,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       existingCoverImage: form.querySelector('[name="existingCoverImage"]'),
       coverFocusX: form.querySelector('[name="coverFocusX"]'),
       coverFocusY: form.querySelector('[name="coverFocusY"]'),
-      coverFocusXRange: form.querySelector('[name="coverFocusXRange"]'),
-      coverFocusYRange: form.querySelector('[name="coverFocusYRange"]'),
       intent: form.querySelector('[name="intent"]'),
       title: form.querySelector('[name="title"]'),
       date: form.querySelector('[name="date"]'),
@@ -398,11 +334,21 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       body: form.querySelector('[name="body"]')
     };
 
+    const focusPresets = {
+      center: { x: 50, y: 50, label: "center" },
+      portrait: { x: 50, y: 28, label: "portrait" },
+      top: { x: 50, y: 20, label: "top" },
+      bottom: { x: 50, y: 80, label: "bottom" },
+      left: { x: 32, y: 50, label: "left" },
+      right: { x: 68, y: 50, label: "right" }
+    };
+
     let currentImageUrl = "";
     let currentRemoteImage = "";
     let entries = [];
     let suppressDraftWrite = false;
     let tagTimer = null;
+    let currentFocusPreset = "center";
 
     function setMessage(message, isError = false) {
       if (!feedback) return;
@@ -413,10 +359,21 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     function setSessionState(authenticated) {
       authBlock.hidden = authenticated;
       panel.hidden = !authenticated;
-      if (status) {
-        status.textContent = authenticated ? "session ready." : "locked.";
-      }
+      if (status) status.textContent = authenticated ? "session ready." : "locked.";
       setMessage("");
+    }
+
+    function setActiveTab(name) {
+      tabButtons.forEach((button) => {
+        const active = button.dataset.adminTab === name;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+      tabPanels.forEach((panelNode) => {
+        const active = panelNode.dataset.adminPanelName === name;
+        panelNode.classList.toggle("active", active);
+        panelNode.hidden = !active;
+      });
     }
 
     function slugify(value) {
@@ -439,12 +396,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
     function renderMarkdownPreview(markdown) {
       const trimmed = (markdown || "").trim();
-      if (!trimmed) {
-        return "<p>write in markdown and the preview will update here.</p>";
-      }
-
+      if (!trimmed) return "<p>write in markdown and the preview will update here.</p>";
       const blocks = trimmed.split(/\n{2,}/).map((block) => block.trim()).filter(Boolean);
-
       return blocks
         .map((block) => {
           if (block.startsWith("### ")) return `<h4>${escapeHtml(block.slice(4))}</h4>`;
@@ -459,7 +412,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               .join("");
             return `<blockquote>${lines}</blockquote>`;
           }
-
           return `<p>${escapeHtml(block).replace(/\n/g, "<br />")}</p>`;
         })
         .join("");
@@ -493,30 +445,25 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         coverAlt: fields.coverAlt.value,
         coverCaption: fields.coverCaption.value,
         body: fields.body.value,
-        removeCoverImage: Boolean(fields.removeCoverImage.checked)
+        removeCoverImage: Boolean(fields.removeCoverImage.checked),
+        activeTab: document.querySelector("[data-admin-tab].active")?.dataset.adminTab || "write"
       };
     }
 
     function saveDraft() {
       if (suppressDraftWrite) return;
       localStorage.setItem(storageKey, JSON.stringify(getDraftSnapshot()));
-      if (draftNote) {
-        draftNote.textContent = "local draft saved on this device";
-      }
     }
 
     function restoreDraft() {
       const raw = localStorage.getItem(storageKey);
       if (!raw) return;
-
       try {
         const snapshot = JSON.parse(raw);
         fields.originalPath.value = snapshot.originalPath || "";
         fields.existingCoverImage.value = snapshot.existingCoverImage || "";
         fields.coverFocusX.value = snapshot.coverFocusX || "50";
         fields.coverFocusY.value = snapshot.coverFocusY || "50";
-        fields.coverFocusXRange.value = snapshot.coverFocusX || "50";
-        fields.coverFocusYRange.value = snapshot.coverFocusY || "50";
         fields.title.value = snapshot.title || "";
         fields.date.value = snapshot.date || fields.date.value;
         fields.status.value = snapshot.status || "published";
@@ -528,9 +475,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         fields.body.value = snapshot.body || "";
         fields.removeCoverImage.checked = Boolean(snapshot.removeCoverImage);
         currentRemoteImage = fields.existingCoverImage.value || "";
-        if (draftNote) {
-          draftNote.textContent = "restored local draft from this device";
-        }
+        setActiveTab(snapshot.activeTab || "write");
       } catch {
         localStorage.removeItem(storageKey);
       }
@@ -543,8 +488,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       fields.existingCoverImage.value = "";
       fields.coverFocusX.value = "50";
       fields.coverFocusY.value = "50";
-      fields.coverFocusXRange.value = "50";
-      fields.coverFocusYRange.value = "50";
       fields.intent.value = "published";
       fields.date.value = today;
       fields.status.value = "published";
@@ -557,16 +500,12 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         currentImageUrl = "";
       }
       previewImage.hidden = true;
-      if (revisionList) {
-        revisionList.innerHTML = "<p class='terminal-line'>no entry loaded yet.</p>";
-      }
-      if (revisionNote) {
-        revisionNote.textContent = "load an entry to inspect revisions";
-      }
+      revisionList.innerHTML = "<p class='terminal-line'>no entry loaded yet.</p>";
+      revisionNote.textContent = "load an entry to inspect revisions";
       submitButton.textContent = "publish";
-      if (modeLabel) {
-        modeLabel.textContent = "new entry";
-      }
+      modeLabel.textContent = "new entry";
+      setFocus(50, 50, "center");
+      setActiveTab("write");
       suppressDraftWrite = false;
     }
 
@@ -574,45 +513,54 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       localStorage.removeItem(storageKey);
       resetFormState();
       updatePreview(true);
-      if (draftNote) {
-        draftNote.textContent = "local draft cleared";
-      }
       setMessage("local draft cleared.");
     }
 
-    function setFocus(x, y) {
+    function highlightFocusPreset(name) {
+      currentFocusPreset = name;
+      focusPresetButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.focusPreset === name);
+      });
+      if (focusReadout) {
+        focusReadout.textContent = name;
+      }
+    }
+
+    function setFocus(x, y, presetName = "custom") {
       const nextX = Math.max(0, Math.min(100, Math.round(Number(x) || 50)));
       const nextY = Math.max(0, Math.min(100, Math.round(Number(y) || 50)));
       fields.coverFocusX.value = `${nextX}`;
       fields.coverFocusY.value = `${nextY}`;
-      fields.coverFocusXRange.value = `${nextX}`;
-      fields.coverFocusYRange.value = `${nextY}`;
-      if (previewImageImg) {
-        previewImageImg.style.objectPosition = `${nextX}% ${nextY}%`;
-      }
-      if (focusMarker) {
-        focusMarker.style.left = `${nextX}%`;
-        focusMarker.style.top = `${nextY}%`;
-      }
-      if (focusReadout) {
-        focusReadout.textContent = `${nextX} / ${nextY}`;
-      }
+      previewImageImg.style.objectPosition = `${nextX}% ${nextY}%`;
+      focusMarker.style.left = `${nextX}%`;
+      focusMarker.style.top = `${nextY}%`;
+      highlightFocusPreset(presetName);
+    }
+
+    function applyFocusPreset(name) {
+      const preset = focusPresets[name] || focusPresets.center;
+      setFocus(preset.x, preset.y, name);
+      saveDraft();
+    }
+
+    function syncFocusPresetFromValues() {
+      const x = Number(fields.coverFocusX.value || 50);
+      const y = Number(fields.coverFocusY.value || 50);
+      const found = Object.entries(focusPresets).find(([, preset]) => preset.x === x && preset.y === y);
+      highlightFocusPreset(found ? found[0] : "custom");
+      setFocus(x, y, found ? found[0] : "custom");
     }
 
     function updateImagePreview() {
       const file = fields.image.files?.[0];
-
       if (file) {
-        if (currentImageUrl) {
-          URL.revokeObjectURL(currentImageUrl);
-        }
-
+        if (currentImageUrl) URL.revokeObjectURL(currentImageUrl);
         currentImageUrl = URL.createObjectURL(file);
         previewImageImg.src = currentImageUrl;
         previewImageImg.alt = fields.coverAlt.value || fields.title.value || "cover preview";
         previewImageCaption.textContent = fields.coverCaption.value || file.name;
         previewImage.hidden = false;
-        setFocus(fields.coverFocusX.value, fields.coverFocusY.value);
+        syncFocusPresetFromValues();
         return;
       }
 
@@ -629,14 +577,11 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       previewImageImg.alt = fields.coverAlt.value || fields.title.value || "cover preview";
       previewImageCaption.textContent = fields.coverCaption.value || "current cover image";
       previewImage.hidden = false;
-      setFocus(fields.coverFocusX.value, fields.coverFocusY.value);
+      syncFocusPresetFromValues();
     }
 
     function statusLabel() {
-      const selected = fields.status.value;
-      if (selected === "draft") return "draft";
-      if (selected === "scheduled") return "scheduled";
-      return "published";
+      return fields.status.value === "draft" ? "draft" : fields.status.value === "scheduled" ? "scheduled" : "published";
     }
 
     function updatePreview(skipDraftSave = false) {
@@ -644,8 +589,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       const date = fields.date.value || today;
       const description = fields.description.value.trim() || "short deck will appear here.";
       const slug = slugify(fields.title.value.trim() || "untitled");
-      const body = fields.body.value;
-      const words = countWords(body);
+      const words = countWords(fields.body.value);
       const minutes = readingMinutes(words);
       const isEditing = Boolean(fields.originalPath.value);
 
@@ -656,123 +600,89 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       previewDate.textContent = `[${date}]`;
       previewTitle.textContent = title;
       previewDescription.textContent = description;
-      previewBody.innerHTML = renderMarkdownPreview(body);
+      previewBody.innerHTML = renderMarkdownPreview(fields.body.value);
       submitButton.textContent = isEditing ? "update" : "publish";
-      if (modeLabel) {
-        modeLabel.textContent = isEditing ? `editing ${fields.originalPath.value.split("/").pop()}` : "new entry";
-      }
+      modeLabel.textContent = isEditing ? `editing ${fields.originalPath.value.split("/").pop()}` : "new entry";
       updateImagePreview();
-      if (!skipDraftSave) {
-        saveDraft();
-      }
+      if (!skipDraftSave) saveDraft();
     }
 
     function renderEntries() {
-      if (!listContainer) return;
-      if (entries.length === 0) {
+      if (!entries.length) {
         listContainer.innerHTML = "<p class='terminal-line'>no entries found.</p>";
         return;
       }
-
       const counts = entries.reduce((acc, entry) => {
         acc[entry.effectiveStatus] = (acc[entry.effectiveStatus] || 0) + 1;
         return acc;
       }, {});
-
-      listContainer.innerHTML = entries
-        .map((entry) => `
-          <article class="admin-entry-card">
-            <div class="admin-entry-copy">
-              <div class="admin-entry-line">
-                <p class="entry-date">[${escapeHtml(entry.date)}]</p>
-                <span class="admin-status-pill" data-state="${escapeHtml(entry.effectiveStatus)}">${escapeHtml(entry.effectiveStatus)}</span>
-              </div>
-              <h3 class="admin-entry-title">${escapeHtml(entry.title)}</h3>
-              <p class="admin-entry-meta">${escapeHtml(entry.filename)}</p>
-              <p class="admin-entry-meta">${entry.wordCount} words · ${entry.readingMinutes} min · ${entry.revisionCount} revisions</p>
+      listContainer.innerHTML = entries.map((entry) => `
+        <article class="admin-entry-card">
+          <div class="admin-entry-copy">
+            <div class="admin-entry-line">
+              <p class="entry-date">[${escapeHtml(entry.date)}]</p>
+              <span class="admin-status-pill" data-state="${escapeHtml(entry.effectiveStatus)}">${escapeHtml(entry.effectiveStatus)}</span>
             </div>
-            <div class="admin-entry-actions">
-              <button class="provider-pill" type="button" data-edit-path="${escapeHtml(entry.path)}">edit</button>
-              <button class="provider-pill admin-danger" type="button" data-delete-path="${escapeHtml(entry.path)}">delete</button>
-            </div>
-          </article>
-        `)
-        .join("");
-
-      if (libraryNote) {
-        libraryNote.textContent = `${entries.length} entries · ${counts.published || 0} published · ${counts.scheduled || 0} scheduled · ${counts.draft || 0} drafts`;
-      }
+            <h3 class="admin-entry-title">${escapeHtml(entry.title)}</h3>
+            <p class="admin-entry-meta">${escapeHtml(entry.filename)}</p>
+            <p class="admin-entry-meta">${entry.wordCount} words · ${entry.readingMinutes} min · ${entry.revisionCount} revisions</p>
+          </div>
+          <div class="admin-entry-actions">
+            <button class="provider-pill" type="button" data-edit-path="${escapeHtml(entry.path)}">edit</button>
+            <button class="provider-pill admin-danger" type="button" data-delete-path="${escapeHtml(entry.path)}">delete</button>
+          </div>
+        </article>
+      `).join("");
+      libraryNote.textContent = `${entries.length} entries · ${counts.published || 0} published · ${counts.scheduled || 0} scheduled · ${counts.draft || 0} drafts`;
     }
 
     function renderRevisions(revisions) {
-      if (!revisionList) return;
       if (!revisions.length) {
         revisionList.innerHTML = "<p class='terminal-line'>no revisions yet for this entry.</p>";
         return;
       }
-
-      revisionList.innerHTML = revisions
-        .map((revision) => `
-          <article class="admin-revision-card">
-            <div class="admin-entry-line">
-              <p class="entry-date">${escapeHtml(revision.savedAtLabel)}</p>
-              <span class="admin-status-pill" data-state="${escapeHtml(revision.reason)}">${escapeHtml(revision.reason)}</span>
-            </div>
-            <h3 class="admin-entry-title">${escapeHtml(revision.title)}</h3>
-            <p class="admin-entry-meta">${revision.wordCount} words · ${escapeHtml(revision.filename)}</p>
-            <div class="admin-entry-actions">
-              <button class="provider-pill" type="button" data-restore-revision="${escapeHtml(revision.path)}">restore</button>
-            </div>
-          </article>
-        `)
-        .join("");
-
-      if (revisionNote) {
-        revisionNote.textContent = `${revisions.length} saved revisions`;
-      }
+      revisionList.innerHTML = revisions.map((revision) => `
+        <article class="admin-revision-card">
+          <div class="admin-entry-line">
+            <p class="entry-date">${escapeHtml(revision.savedAtLabel)}</p>
+            <span class="admin-status-pill" data-state="${escapeHtml(revision.reason)}">${escapeHtml(revision.reason)}</span>
+          </div>
+          <h3 class="admin-entry-title">${escapeHtml(revision.title)}</h3>
+          <p class="admin-entry-meta">${revision.wordCount} words · ${escapeHtml(revision.filename)}</p>
+          <div class="admin-entry-actions">
+            <button class="provider-pill" type="button" data-restore-revision="${escapeHtml(revision.path)}">restore</button>
+          </div>
+        </article>
+      `).join("");
+      revisionNote.textContent = `${revisions.length} saved revisions`;
     }
 
     function renderPillGroup(target, items, formatter = (item) => item) {
-      if (!target) return;
       if (!items.length) {
         target.innerHTML = "<span class='admin-empty'>none</span>";
         return;
       }
-
-      target.innerHTML = items
-        .map((item) => `<button class="provider-pill admin-pill-action" type="button" data-tag-apply="${escapeHtml(typeof item === "string" ? item : item.tag)}">${escapeHtml(formatter(item))}</button>`)
-        .join("");
+      target.innerHTML = items.map((item) => `
+        <button class="provider-pill admin-pill-action" type="button" data-tag-apply="${escapeHtml(typeof item === "string" ? item : item.tag)}">
+          ${escapeHtml(formatter(item))}
+        </button>
+      `).join("");
     }
 
     function renderWarnings(payload) {
-      if (!tagWarnings) return;
       const warnings = [];
-      if (payload.weakTags?.length) {
-        warnings.push(`weak: ${payload.weakTags.join(", ")}`);
-      }
-      if (payload.duplicateTags?.length) {
-        warnings.push(`duplicate: ${payload.duplicateTags.join(", ")}`);
-      }
-
-      if (!warnings.length) {
-        tagWarnings.innerHTML = "<span class='admin-empty'>clean</span>";
-        return;
-      }
-
-      tagWarnings.innerHTML = warnings.map((item) => `<p>${escapeHtml(item)}</p>`).join("");
+      if (payload.weakTags?.length) warnings.push(`weak: ${payload.weakTags.join(", ")}`);
+      if (payload.duplicateTags?.length) warnings.push(`duplicate: ${payload.duplicateTags.join(", ")}`);
+      tagWarnings.innerHTML = warnings.length ? warnings.map((item) => `<p>${escapeHtml(item)}</p>`).join("") : "<span class='admin-empty'>clean</span>";
     }
 
     function renderAnalytics(payload) {
-      if (!analyticsContainer) return;
-
       analyticsContainer.innerHTML = `
         <div class="admin-analytics-cards">
           <article class="admin-analytics-card"><strong>${payload.counts.total}</strong><span>entries</span></article>
           <article class="admin-analytics-card"><strong>${payload.counts.published}</strong><span>published</span></article>
           <article class="admin-analytics-card"><strong>${payload.counts.scheduled}</strong><span>scheduled</span></article>
           <article class="admin-analytics-card"><strong>${payload.counts.drafts}</strong><span>drafts</span></article>
-          <article class="admin-analytics-card"><strong>${payload.counts.revisions}</strong><span>revisions</span></article>
-          <article class="admin-analytics-card"><strong>${payload.totals.imageCoverage}%</strong><span>with cover</span></article>
         </div>
         <div class="admin-analytics-grid">
           <div class="admin-analytics-block">
@@ -785,14 +695,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
             <p class="admin-subtitle">top tags</p>
             ${(payload.topTags || []).map((item) => `<p>${escapeHtml(item.tag)} <small>${item.count}</small></p>`).join("") || "<p class='admin-empty'>none</p>"}
           </div>
-          <div class="admin-analytics-block">
-            <p class="admin-subtitle">longest entries</p>
-            ${(payload.longestEntries || []).map((item) => `<p>${escapeHtml(item.title)} <small>${item.wordCount}w</small></p>`).join("") || "<p class='admin-empty'>none</p>"}
-          </div>
-          <div class="admin-analytics-block">
-            <p class="admin-subtitle">recent cadence</p>
-            ${(payload.recentTimeline || []).map((item) => `<p>${escapeHtml(item.month)} <small>${item.count}</small></p>`).join("") || "<p class='admin-empty'>none</p>"}
-          </div>
         </div>
       `;
     }
@@ -800,66 +702,50 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     async function loadEntries() {
       const response = await fetch("/api/admin/entries", { cache: "no-store" });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Could not load entries.");
-      }
-
+      if (!response.ok) throw new Error(data.error || "Could not load entries.");
       entries = data.entries || [];
       renderEntries();
     }
 
     async function loadEntry(path) {
-      const response = await fetch(`/api/admin/entry?path=${encodeURIComponent(path)}`, {
-        cache: "no-store"
-      });
+      const response = await fetch(`/api/admin/entry?path=${encodeURIComponent(path)}`, { cache: "no-store" });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Could not load entry.");
-      }
-
+      if (!response.ok) throw new Error(data.error || "Could not load entry.");
       const entry = data.entry;
-      const tags = Array.isArray(entry.tags) ? entry.tags : [];
-
       fields.originalPath.value = entry.path;
       fields.existingCoverImage.value = entry.coverImage || "";
       fields.coverFocusX.value = `${entry.coverFocusX ?? 50}`;
       fields.coverFocusY.value = `${entry.coverFocusY ?? 50}`;
-      fields.coverFocusXRange.value = `${entry.coverFocusX ?? 50}`;
-      fields.coverFocusYRange.value = `${entry.coverFocusY ?? 50}`;
       fields.title.value = entry.title || "";
       fields.date.value = entry.date || fields.date.value;
       fields.status.value = entry.status || "published";
       fields.publishAt.value = entry.publishAtInput || "";
       fields.description.value = entry.description || "";
-      fields.tags.value = tags.join(", ");
+      fields.tags.value = Array.isArray(entry.tags) ? entry.tags.join(", ") : "";
       fields.coverAlt.value = entry.coverAlt || "";
       fields.coverCaption.value = entry.coverCaption || "";
       fields.body.value = entry.body || "";
       fields.removeCoverImage.checked = false;
       currentRemoteImage = entry.coverImage || "";
       publishResult.hidden = true;
+      syncFocusPresetFromValues();
       updatePreview();
       await Promise.all([loadRevisions(path), refreshTagIntelligence()]);
+      setActiveTab("write");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     async function loadRevisions(path) {
-      const response = await fetch(`/api/admin/revisions?path=${encodeURIComponent(path)}`, {
-        cache: "no-store"
-      });
+      const response = await fetch(`/api/admin/revisions?path=${encodeURIComponent(path)}`, { cache: "no-store" });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Could not load revisions.");
-      }
+      if (!response.ok) throw new Error(data.error || "Could not load revisions.");
       renderRevisions(data.revisions || []);
     }
 
     async function loadAnalytics() {
       const response = await fetch("/api/admin/analytics", { cache: "no-store" });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Could not load analytics.");
-      }
+      if (!response.ok) throw new Error(data.error || "Could not load analytics.");
       renderAnalytics(data);
     }
 
@@ -874,12 +760,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
           body: fields.body.value
         })
       });
-
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Could not load tag intelligence.");
-      }
-
+      if (!response.ok) throw new Error(data.error || "Could not load tag intelligence.");
       renderPillGroup(tagSuggestions, data.suggestedTags || []);
       renderPillGroup(recurringTerms, data.recurringTerms || []);
       renderPillGroup(knownTags, data.knownTags || [], (item) => `${item.tag} (${item.count})`);
@@ -890,45 +772,31 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       const entry = entries.find((item) => item.path === path);
       const title = entry?.title || path.split("/").pop();
       if (!window.confirm(`Delete "${title}"?`)) return;
-
       setMessage("deleting...");
-
       const response = await fetch("/api/admin/entry", {
         method: "DELETE",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ path })
       });
-
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Delete failed.");
-      }
-
-      if (fields.originalPath.value === path) {
-        clearDraft();
-      }
-
+      if (!response.ok) throw new Error(data.error || "Delete failed.");
+      if (fields.originalPath.value === path) clearDraft();
       setMessage(`deleted: ${data.deleted}`);
       await Promise.all([loadEntries(), loadAnalytics()]);
     }
 
     async function restoreRevision(path) {
       if (!window.confirm("Restore this revision? Current version will be snapshotted first.")) return;
-
       setMessage("restoring revision...");
-
       const response = await fetch("/api/admin/revision/restore", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ revisionPath: path })
       });
-
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Restore failed.");
-      }
-
+      if (!response.ok) throw new Error(data.error || "Restore failed.");
       await Promise.all([loadEntries(), loadAnalytics(), loadEntry(data.entryPath)]);
+      setActiveTab("insights");
       setMessage("revision restored.");
     }
 
@@ -936,27 +804,20 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       const response = await fetch("/api/admin/session", { cache: "no-store" });
       const data = await response.json();
       setSessionState(Boolean(data.authenticated));
-      if (data.authenticated) {
-        await Promise.all([loadEntries(), loadAnalytics(), refreshTagIntelligence()]);
-      }
+      if (data.authenticated) await Promise.all([loadEntries(), loadAnalytics(), refreshTagIntelligence()]);
     }
 
     async function login() {
       const password = passwordInput.value;
       loginButton.disabled = true;
-
       try {
         const response = await fetch("/api/admin/login", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ password })
         });
-
         const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Login failed.");
-        }
-
+        if (!response.ok) throw new Error(data.error || "Login failed.");
         passwordInput.value = "";
         setSessionState(true);
         await Promise.all([loadEntries(), loadAnalytics(), refreshTagIntelligence()]);
@@ -975,15 +836,12 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     function prepareIntent(intent) {
       const normalized = normalizeQuickIntent(intent);
       fields.intent.value = normalized;
-
       if (normalized === "draft") {
         fields.status.value = "draft";
         fields.publishAt.value = "";
       } else if (normalized === "scheduled") {
         fields.status.value = "scheduled";
-        if (!fields.publishAt.value) {
-          fields.publishAt.value = `${fields.date.value || today}T09:00`;
-        }
+        if (!fields.publishAt.value) fields.publishAt.value = `${fields.date.value || today}T09:00`;
       } else {
         fields.status.value = "published";
         fields.publishAt.value = "";
@@ -995,45 +853,24 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       submitButton.disabled = true;
       setMessage("publishing...");
       publishResult.hidden = true;
-
       try {
         const formData = new FormData(form);
         formData.set("removeCoverImage", formData.get("removeCoverImage") ? "true" : "false");
-
-        const response = await fetch("/api/admin/publish", {
-          method: "POST",
-          body: formData
-        });
-
+        const response = await fetch("/api/admin/publish", { method: "POST", body: formData });
         const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || "Publish failed.");
-        }
-
-        if (liveLink) {
-          liveLink.href = data.entryUrl;
-          liveLink.textContent = `open live post: ${data.entryUrl}`;
-        }
+        if (!response.ok) throw new Error(data.error || "Publish failed.");
+        liveLink.href = data.entryUrl;
+        liveLink.textContent = `open live post: ${data.entryUrl}`;
         publishResult.hidden = false;
-
         localStorage.removeItem(storageKey);
-        if (draftNote) {
-          draftNote.textContent = `${data.status} saved and local draft cleared`;
-        }
-
         const createdPath = data.path;
         resetFormState(true);
         await Promise.all([loadEntries(), loadAnalytics()]);
-        if (createdPath) {
-          await loadEntry(createdPath);
-        } else {
-          updatePreview(true);
-        }
+        if (createdPath) await loadEntry(createdPath);
+        else updatePreview(true);
         setMessage(`${data.mode === "update" ? "updated" : "saved"}: ${data.filename}`);
       } catch (error) {
-        if (error.message === "Authentication required.") {
-          setSessionState(false);
-        }
+        if (error.message === "Authentication required.") setSessionState(false);
         setMessage(error.message || "Publish failed.", true);
       } finally {
         submitButton.disabled = false;
@@ -1043,26 +880,16 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     function scheduleTagRefresh() {
       window.clearTimeout(tagTimer);
       tagTimer = window.setTimeout(() => {
-        refreshTagIntelligence().catch(() => {
-          // silent
-        });
-      }, 500);
+        refreshTagIntelligence().catch(() => {});
+      }, 450);
     }
 
     listContainer?.addEventListener("click", async (event) => {
       const target = event.target.closest("button");
       if (!target) return;
-
       try {
-        if (target.dataset.editPath) {
-          setMessage("loading entry...");
-          await loadEntry(target.dataset.editPath);
-          setMessage("entry loaded.");
-        }
-
-        if (target.dataset.deletePath) {
-          await deleteEntry(target.dataset.deletePath);
-        }
+        if (target.dataset.editPath) await loadEntry(target.dataset.editPath);
+        if (target.dataset.deletePath) await deleteEntry(target.dataset.deletePath);
       } catch (error) {
         setMessage(error.message || "Action failed.", true);
       }
@@ -1083,11 +910,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         const target = event.target.closest("[data-tag-apply]");
         if (!target) return;
         const value = target.dataset.tagApply;
-        const existing = fields.tags.value
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter(Boolean);
-
+        const existing = fields.tags.value.split(",").map((tag) => tag.trim()).filter(Boolean);
         if (!existing.some((tag) => tag.toLocaleLowerCase("tr-TR") === value.toLocaleLowerCase("tr-TR"))) {
           existing.push(value);
           fields.tags.value = existing.join(", ");
@@ -1095,6 +918,14 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
           scheduleTagRefresh();
         }
       });
+    });
+
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => setActiveTab(button.dataset.adminTab));
+    });
+
+    focusPresetButtons.forEach((button) => {
+      button.addEventListener("click", () => applyFocusPreset(button.dataset.focusPreset));
     });
 
     refreshTagsButton?.addEventListener("click", () => {
@@ -1127,23 +958,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     });
 
     fields.status?.addEventListener("change", () => {
-      if (fields.status.value === "scheduled" && !fields.publishAt.value) {
-        fields.publishAt.value = `${fields.date.value || today}T09:00`;
-      }
-      if (fields.status.value !== "scheduled") {
-        fields.publishAt.value = "";
-      }
+      if (fields.status.value === "scheduled" && !fields.publishAt.value) fields.publishAt.value = `${fields.date.value || today}T09:00`;
+      if (fields.status.value !== "scheduled") fields.publishAt.value = "";
       updatePreview();
-    });
-
-    fields.coverFocusXRange?.addEventListener("input", () => {
-      setFocus(fields.coverFocusXRange.value, fields.coverFocusYRange.value);
-      saveDraft();
-    });
-
-    fields.coverFocusYRange?.addEventListener("input", () => {
-      setFocus(fields.coverFocusXRange.value, fields.coverFocusYRange.value);
-      saveDraft();
     });
 
     imageStage?.addEventListener("click", (event) => {
@@ -1151,7 +968,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       const rect = imageStage.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * 100;
       const y = ((event.clientY - rect.top) / rect.height) * 100;
-      setFocus(x, y);
+      setFocus(x, y, "custom");
       saveDraft();
     });
 
@@ -1172,7 +989,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     });
 
     restoreDraft();
-    setFocus(fields.coverFocusX.value, fields.coverFocusY.value);
+    syncFocusPresetFromValues();
     updatePreview();
     refreshTagIntelligence().catch(() => {});
   })();

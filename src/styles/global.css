@@ -757,13 +757,6 @@ img {
   gap: 1rem;
 }
 
-.admin-dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.9fr);
-  gap: 1rem;
-  align-items: start;
-}
-
 .admin-summary,
 .admin-preview-card {
   padding: 1rem 1.05rem;
@@ -802,11 +795,6 @@ img {
   gap: 1rem;
 }
 
-.admin-side-stack {
-  display: grid;
-  gap: 1rem;
-}
-
 .admin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -833,12 +821,62 @@ img {
   gap: 0.95rem;
 }
 
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.admin-tabs .provider-pill {
+  min-height: 2.3rem;
+  padding: 0.45rem 0.8rem;
+}
+
+.admin-tab-panel {
+  display: grid;
+  gap: 0.95rem;
+}
+
 .admin-subpanel {
   display: grid;
   gap: 0.8rem;
   padding: 0.95rem 1rem;
   border: 1px solid var(--line);
   background: var(--surface-soft);
+}
+
+.admin-details {
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.admin-details summary {
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+.admin-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-details summary::after {
+  content: "+";
+  float: right;
+  color: var(--muted);
+}
+
+.admin-details[open] summary::after {
+  content: "-";
+}
+
+.admin-details-body {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0 1rem 1rem;
 }
 
 .admin-subpanel-quick {
@@ -871,6 +909,13 @@ img {
   gap: 0.55rem;
   color: var(--text-secondary);
   font-size: 0.95rem;
+}
+
+.admin-inline-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .admin-subtitle {
@@ -959,6 +1004,7 @@ img {
 .admin-focus-readout {
   font-family: var(--font-meta);
   color: var(--muted);
+  text-transform: lowercase;
 }
 
 .admin-preview-title {
@@ -1065,7 +1111,8 @@ img {
 .admin-status-pill[data-state="draft"],
 .admin-status-pill[data-state="update"],
 .admin-status-pill[data-state="restore"],
-.admin-status-pill[data-state="delete"] {
+.admin-status-pill[data-state="delete"],
+.admin-status-pill[data-state="custom"] {
   border-color: var(--line-strong);
   color: var(--muted);
 }
@@ -1717,7 +1764,6 @@ figure figcaption {
     grid-template-columns: 1fr;
   }
 
-  .admin-dashboard-grid,
   .admin-tag-grid,
   .admin-analytics-grid {
     grid-template-columns: 1fr;
@@ -1751,6 +1797,10 @@ figure figcaption {
     flex: 1 1 auto;
     justify-content: center;
     text-align: center;
+  }
+
+  .admin-tabs .provider-pill {
+    flex: 1 1 calc(50% - 0.55rem);
   }
 
   .admin-quick-actions .submit-button,
