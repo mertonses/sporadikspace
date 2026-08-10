@@ -27,6 +27,13 @@ const siteOrigin = Astro.site ?? new URL(Astro.url.origin);
 
 const canonicalUrl = new URL(canonicalPath, siteOrigin);
 const ogImageUrl = new URL(ogImage || "/og.svg", siteOrigin);
+const ogImageType = (() => {
+  const pathname = ogImageUrl.pathname.toLowerCase();
+  if (pathname.endsWith(".png")) return "image/png";
+  if (pathname.endsWith(".webp")) return "image/webp";
+  if (pathname.endsWith(".svg")) return "image/svg+xml";
+  return "image/jpeg";
+})();
 
 const pageTitle =
   title === siteConfig.title
@@ -68,10 +75,16 @@ const pageTitle =
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:site_name" content={siteConfig.title} />
+    <meta property="og:locale" content="tr_TR" />
     <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
+    <meta property="og:image:type" content={ogImageType} />
     <meta property="og:image:alt" content={ogImageAlt} />
 
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:site" content="@sporadikspace" />
+    <meta name="twitter:creator" content="@sporadikspace" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
