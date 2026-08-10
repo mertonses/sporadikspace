@@ -13,9 +13,9 @@ draft: false
 status: "published"
 ---
 
-À la Lingua Franca, emsalleri beynelmilel
-Fâni satırlar seyyahı, Dil Cambazı namıdiğer
-O' Linguafraudator! Düşürme elinden kalemini
+À la Lingua Franca, emsalleri beynelmilel<br>
+Fâni satırlar seyyahı, Dil Cambazı namıdiğer<br>
+O' Linguafraudator! Düşürme elinden kalemini<br>
 Keep hold of it, sana yegâne sığınak lisan-ı hiyel
 
 Kâtipler nezdinde namın çoktan firari<br>
