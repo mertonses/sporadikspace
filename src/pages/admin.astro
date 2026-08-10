@@ -1,0 +1,246 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<BaseLayout title="Admin">
+  <section class="terminal-block" aria-labelledby="admin-title">
+    <div class="section-head">
+      <h1 id="admin-title" class="screen-title">PUBLISH PANEL</h1>
+      <p class="muted admin-note">private route for sporadik.space</p>
+    </div>
+
+    <div class="admin-shell">
+      <div class="admin-auth" data-admin-auth>
+        <label class="search-label" for="admin-password">password</label>
+        <div class="admin-inline">
+          <input
+            id="admin-password"
+            class="search-input"
+            type="password"
+            autocomplete="current-password"
+            placeholder="enter admin password"
+          />
+
+          <button class="submit-button" type="button" data-admin-login>
+            unlock
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-panel" data-admin-panel hidden>
+        <div class="admin-inline admin-toolbar">
+          <p class="terminal-line admin-status" data-admin-status>
+            session ready.
+          </p>
+
+          <button class="provider-pill" type="button" data-admin-logout>
+            lock
+          </button>
+        </div>
+
+        <form class="admin-form" data-admin-form>
+          <div class="admin-grid">
+            <label>
+              <span class="search-label">title</span>
+              <input class="search-input" type="text" name="title" required />
+            </label>
+
+            <label>
+              <span class="search-label">date</span>
+              <input class="search-input" type="date" name="date" value={today} required />
+            </label>
+          </div>
+
+          <label>
+            <span class="search-label">description</span>
+            <input
+              class="search-input"
+              type="text"
+              name="description"
+              placeholder="short deck for homepage and meta"
+            />
+          </label>
+
+          <label>
+            <span class="search-label">tags</span>
+            <input
+              class="search-input"
+              type="text"
+              name="tags"
+              placeholder="deneme, notlar, gözlem"
+            />
+          </label>
+
+          <label>
+            <span class="search-label">cover image</span>
+            <input class="search-input admin-file" type="file" name="image" accept="image/*" />
+          </label>
+
+          <div class="admin-grid">
+            <label>
+              <span class="search-label">cover alt</span>
+              <input
+                class="search-input"
+                type="text"
+                name="coverAlt"
+                placeholder="short image description"
+              />
+            </label>
+
+            <label>
+              <span class="search-label">cover caption</span>
+              <input
+                class="search-input"
+                type="text"
+                name="coverCaption"
+                placeholder="optional caption"
+              />
+            </label>
+          </div>
+
+          <label>
+            <span class="search-label">body</span>
+            <textarea
+              class="search-input admin-textarea"
+              name="body"
+              placeholder="write in markdown..."
+              required
+            ></textarea>
+          </label>
+
+          <label class="admin-checkbox">
+            <input type="checkbox" name="draft" value="true" />
+            <span>save as draft</span>
+          </label>
+
+          <div class="admin-inline">
+            <button class="submit-button" type="submit" data-admin-submit>
+              publish
+            </button>
+            <p class="terminal-line admin-feedback" data-admin-feedback></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script is:inline>
+  (() => {
+    const authBlock = document.querySelector("[data-admin-auth]");
+    const panel = document.querySelector("[data-admin-panel]");
+    const passwordInput = document.querySelector("#admin-password");
+    const loginButton = document.querySelector("[data-admin-login]");
+    const logoutButton = document.querySelector("[data-admin-logout]");
+    const form = document.querySelector("[data-admin-form]");
+    const feedback = document.querySelector("[data-admin-feedback]");
+    const status = document.querySelector("[data-admin-status]");
+    const submitButton = document.querySelector("[data-admin-submit]");
+
+    function setMessage(message, isError = false) {
+      if (!feedback) return;
+      feedback.textContent = message;
+      feedback.dataset.state = isError ? "error" : "ok";
+    }
+
+    function setSessionState(authenticated) {
+      authBlock.hidden = authenticated;
+      panel.hidden = !authenticated;
+      if (status) {
+        status.textContent = authenticated ? "session ready." : "locked.";
+      }
+      setMessage("");
+    }
+
+    async function refreshSession() {
+      const response = await fetch("/api/admin/session", { cache: "no-store" });
+      const data = await response.json();
+      setSessionState(Boolean(data.authenticated));
+    }
+
+    async function login() {
+      const password = passwordInput.value;
+      loginButton.disabled = true;
+
+      try {
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Login failed.");
+        }
+
+        passwordInput.value = "";
+        setSessionState(true);
+      } catch (error) {
+        setMessage(error.message || "Login failed.", true);
+      } finally {
+        loginButton.disabled = false;
+      }
+    }
+
+    async function logout() {
+      await fetch("/api/admin/logout", { method: "POST" });
+      setSessionState(false);
+    }
+
+    async function publish(event) {
+      event.preventDefault();
+      submitButton.disabled = true;
+      setMessage("publishing...");
+
+      try {
+        const formData = new FormData(form);
+        formData.set("draft", formData.get("draft") ? "true" : "false");
+
+        const response = await fetch("/api/admin/publish", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Publish failed.");
+        }
+
+        form.reset();
+        const dateInput = form.querySelector('input[name="date"]');
+        if (dateInput) {
+          dateInput.value = new Date().toISOString().slice(0, 10);
+        }
+
+        setMessage(`published: ${data.filename}`);
+      } catch (error) {
+        if (error.message === "Authentication required.") {
+          setSessionState(false);
+        }
+        setMessage(error.message || "Publish failed.", true);
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    loginButton?.addEventListener("click", login);
+    passwordInput?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        login();
+      }
+    });
+    logoutButton?.addEventListener("click", logout);
+    form?.addEventListener("submit", publish);
+
+    refreshSession().catch(() => {
+      setSessionState(false);
+      setMessage("admin session could not be checked.", true);
+    });
+  })();
+</script>

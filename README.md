@@ -30,6 +30,29 @@ public/
 .github/workflows/
 ```
 
+## Hidden mobile publishing panel
+
+There is now a private publishing route at:
+
+```text
+/admin
+```
+
+It lets you:
+
+- log in with an admin password
+- write a post from your phone
+- upload one cover image
+- publish directly to the GitHub repo
+
+Publishing creates:
+
+- a markdown file in `src/content/journal/`
+- an uploaded image in `public/images/posts/<slug>/`
+- a Git commit on `main`
+
+That commit then triggers the existing GitHub Actions deploy workflow automatically.
+
 ## How to add a new journal entry
 
 1. Create a new file in `src/content/journal/`
@@ -220,6 +243,41 @@ Or send the latest published entry manually:
 npm run publish:latest-email
 ```
 
+## Admin route setup
+
+The `/admin` route depends on Worker secrets.
+
+Set them once:
+
+```bash
+npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put ADMIN_SESSION_SECRET
+npx wrangler secret put GITHUB_TOKEN
+```
+
+Then add non-secret repo settings in `wrangler.jsonc` or as environment vars if you prefer:
+
+- `GITHUB_OWNER`
+- `GITHUB_REPO`
+- `GITHUB_BRANCH` (optional, defaults to `main`)
+
+This project expects:
+
+- owner: `mertonses`
+- repo: `sporadikspace`
+- branch: `main`
+
+### Recommended GitHub token scope
+
+Use a fine-grained GitHub token with access only to:
+
+- repository: `mertonses/sporadikspace`
+- permissions:
+  - Contents: read and write
+  - Metadata: read
+
+The admin form never exposes the token to the browser. It is only used server-side inside the deployed Worker.
+
 ## RSS
 
 The feed is generated at:
@@ -245,6 +303,6 @@ It is compatible with RSS readers, newsletter tools, and Substack import workflo
 - No likes
 - No social feed logic
 - No database
-- No authentication
+- Markdown remains the source of truth
 
 Just the writing.
