@@ -157,17 +157,21 @@ function changedJournalFiles() {
     return [];
   }
 
-  const diffOutput = execFileSync(
-    "git",
-    ["diff", "--name-only", "--diff-filter=AMR", before, after, "--", "src/content/journal"],
-    { encoding: "utf8" }
-  );
+  try {
+    const diffOutput = execFileSync(
+      "git",
+      ["diff", "--name-only", "--diff-filter=AMR", before, after, "--", "src/content/journal"],
+      { encoding: "utf8" }
+    );
 
-  return diffOutput
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((relativePath) => path.resolve(relativePath));
+    return diffOutput
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((relativePath) => path.resolve(relativePath));
+  } catch {
+    return [];
+  }
 }
 
 function selectEntry(entries) {
