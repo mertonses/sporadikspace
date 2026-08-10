@@ -757,6 +757,29 @@ img {
   gap: 1rem;
 }
 
+.admin-summary,
+.admin-preview-card {
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.admin-summary-label,
+.admin-summary-meta {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: 0.75rem;
+}
+
+.admin-summary-value {
+  margin: 0.35rem 0 0.5rem;
+  color: var(--text);
+  font-family: var(--font-meta);
+  font-size: 0.92rem;
+  word-break: break-word;
+}
+
 .admin-panel,
 .admin-auth {
   display: grid;
@@ -785,6 +808,10 @@ img {
   gap: 0.95rem;
 }
 
+.admin-actions {
+  align-items: center;
+}
+
 .admin-textarea {
   min-height: 18rem;
   resize: vertical;
@@ -806,6 +833,46 @@ img {
 .admin-feedback {
   min-height: 1.4rem;
   margin: 0;
+}
+
+.admin-image-preview {
+  margin: 0;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+}
+
+.admin-image-preview img {
+  width: 100%;
+  max-height: 18rem;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+.admin-image-preview figcaption {
+  padding: 0.6rem 0.8rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.admin-preview-title {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-reading);
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.admin-preview-body {
+  max-width: none;
+}
+
+.admin-publish-result {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
 }
 
 .admin-feedback[data-state="error"] {
@@ -1379,6 +1446,29 @@ figure figcaption {
     grid-template-columns: 1fr;
   }
 
+  .admin-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 0 -1.25rem -1.4rem;
+    padding: 0.9rem 1.25rem 1rem;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+  }
+
+  .admin-actions .submit-button,
+  .admin-actions .provider-pill {
+    flex: 1 1 auto;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .admin-feedback {
+    flex-basis: 100%;
+    order: 3;
+  }
+
   .image-gallery,
   .gallery {
     grid-template-columns: 1fr;
@@ -1419,6 +1509,13 @@ figure figcaption {
   .image-gallery,
   .gallery {
     width: calc(100vw - 2rem);
+  }
+
+  .admin-actions {
+    margin-right: -1rem;
+    margin-left: -1rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
   }
 }
 
