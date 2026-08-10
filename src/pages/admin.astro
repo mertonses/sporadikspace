@@ -501,12 +501,17 @@ const today = new Date().toISOString().slice(0, 10);
       }
 
       const entry = data.entry;
+      const tags = Array.isArray(entry.tags)
+        ? entry.tags
+        : typeof entry.tags === "string" && entry.tags.trim()
+          ? entry.tags.split(",").map((item) => item.trim()).filter(Boolean)
+          : [];
       fields.originalPath.value = entry.path;
       fields.existingCoverImage.value = entry.coverImage || "";
       fields.title.value = entry.title || "";
       fields.date.value = entry.date || fields.date.value;
       fields.description.value = entry.description || "";
-      fields.tags.value = (entry.tags || []).join(", ");
+      fields.tags.value = tags.join(", ");
       fields.coverAlt.value = entry.coverAlt || "";
       fields.coverCaption.value = entry.coverCaption || "";
       fields.body.value = entry.body || "";

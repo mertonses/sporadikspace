@@ -460,6 +460,14 @@ function parseFrontmatter(frontmatter: string) {
       continue;
     }
 
+    if (trimmed.startsWith("tags: [") && trimmed.endsWith("]")) {
+      const inner = trimmed.slice(7, -1).trim();
+      result.tags = inner
+        ? inner.split(",").map((item) => item.trim().replace(/^["']|["']$/g, ""))
+        : [];
+      continue;
+    }
+
     if (trimmed === "tags:") {
       inTags = true;
       continue;
