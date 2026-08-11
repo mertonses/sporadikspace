@@ -40,6 +40,11 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       </div>
 
       <div class="admin-panel" data-admin-panel hidden>
+        <div class="admin-tabs" role="tablist" aria-label="Admin sections">
+          <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="library" data-i18n="admin_library">library</button>
+          <button class="provider-pill active" type="button" role="tab" aria-selected="true" data-admin-tab="write" data-i18n="admin_write">write</button>
+        </div>
+
         <div class="admin-inline admin-toolbar">
           <p class="terminal-line admin-status" data-admin-status>session ready.</p>
           <div class="admin-toolbar-actions">
@@ -55,11 +60,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
             <p class="admin-summary-meta" data-admin-reading-time>1 min read</p>
             <p class="admin-summary-meta" data-admin-status-chip>published</p>
           </div>
-        </div>
-
-        <div class="admin-tabs" role="tablist" aria-label="Admin sections">
-          <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="library" data-i18n="admin_library">library</button>
-          <button class="provider-pill active" type="button" role="tab" aria-selected="true" data-admin-tab="write" data-i18n="admin_write">write</button>
         </div>
 
         <form class="admin-form" data-admin-form>
@@ -766,8 +766,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Publish failed.");
 
+        const savedEntryPath = data.entryPath || data.path || "";
         setMessage("saved.");
-        fields.originalPath.value = data.entryPath || "";
+        fields.originalPath.value = savedEntryPath;
         fields.existingCoverImage.value = data.coverImage || "";
         currentRemoteImage = data.coverImage || "";
         modeLabel.textContent = "editing entry";
@@ -775,10 +776,14 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         liveLink.href = data.entryUrl || "#";
         publishResult.hidden = false;
         fields.intent.value = "published";
-        localStorage.removeItem(storageKey);
+        if (data.effectiveStatus === "draft") {
+          saveDraft();
+        } else {
+          localStorage.removeItem(storageKey);
+        }
         updatePreview(true);
         updateImagePreviewFromRemote();
-        if (data.entryPath) await loadRevisions(data.entryPath);
+        if (savedEntryPath) await loadRevisions(savedEntryPath);
         await loadEntries();
         setEditingState(true);
       } catch (error) {
