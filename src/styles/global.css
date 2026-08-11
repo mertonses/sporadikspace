@@ -770,7 +770,7 @@ img {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem 0.65rem;
+  gap: 0.3rem 0.55rem;
 }
 
 .admin-summary-label,
@@ -778,14 +778,15 @@ img {
   margin: 0;
   color: var(--muted);
   font-family: var(--font-meta);
-  font-size: 0.75rem;
+  font-size: 0.71rem;
+  opacity: 0.8;
 }
 
 .admin-summary-value {
-  margin: 0.35rem 0 0.5rem;
+  margin: 0.3rem 0 0.35rem;
   color: var(--text);
   font-family: var(--font-meta);
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   word-break: break-word;
 }
 
@@ -847,6 +848,12 @@ img {
   padding: 0.45rem 0.8rem;
 }
 
+.admin-button-quiet {
+  min-height: 2.15rem;
+  padding: 0.4rem 0.72rem;
+  color: var(--text-secondary);
+}
+
 .admin-tab-panel {
   display: grid;
   gap: 0.95rem;
@@ -896,6 +903,20 @@ img {
 
 .admin-actions {
   align-items: center;
+}
+
+.admin-text-action {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-text-action:hover,
+.admin-text-action:focus-visible {
+  color: var(--text-secondary);
 }
 
 .admin-textarea {
@@ -1031,7 +1052,7 @@ img {
 
 .admin-entry-list {
   display: grid;
-  gap: 0.7rem;
+  gap: 0;
 }
 
 .admin-revision-list {
@@ -1039,19 +1060,18 @@ img {
   gap: 0.7rem;
 }
 
-.admin-entry-card {
+.admin-entry-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.8rem;
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--line);
-  background: var(--surface-soft);
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--line);
 }
 
 .admin-entry-title {
-  margin: 0.15rem 0 0.2rem;
+  margin: 0.12rem 0 0.16rem;
   font-family: var(--font-reading);
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1.2;
 }
 
@@ -1059,14 +1079,15 @@ img {
   margin: 0;
   color: var(--muted);
   font-family: var(--font-meta);
-  font-size: 0.75rem;
+  font-size: 0.71rem;
 }
 
 .admin-entry-actions {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.45rem;
+  align-self: center;
+  gap: 0.4rem;
 }
 
 .admin-danger {
@@ -1778,7 +1799,7 @@ figure figcaption {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-entry-card {
+  .admin-entry-row {
     grid-template-columns: 1fr;
   }
 
@@ -1878,3 +1899,4 @@ figure figcaption {
     transition-duration: 0.01ms !important;
   }
 }
+

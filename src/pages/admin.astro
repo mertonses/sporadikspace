@@ -1,4 +1,4 @@
----
+﻿---
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const current = new Date();
@@ -46,19 +46,19 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         </div>
 
         <div class="admin-inline admin-toolbar">
-          <p class="terminal-line admin-status" data-admin-status>session ready.</p>
+          <p class="terminal-line admin-status" data-admin-status>oturum hazir.</p>
           <div class="admin-toolbar-actions">
-            <button class="provider-pill" type="button" data-admin-reset-form data-i18n="admin_new">new entry</button>
+            <button class="provider-pill admin-button-quiet" type="button" data-admin-reset-form data-i18n="admin_new">yeni</button>
           </div>
         </div>
 
         <div class="admin-summary">
-          <p class="admin-summary-label" data-admin-mode-label>new entry</p>
+          <p class="admin-summary-label" data-admin-mode-label>yeni yazi</p>
           <p class="admin-summary-value" data-admin-entry-url>/journal/{today}-untitled/</p>
           <div class="admin-summary-meta-row">
-            <p class="admin-summary-meta" data-admin-word-count>0 words</p>
-            <p class="admin-summary-meta" data-admin-reading-time>1 min read</p>
-            <p class="admin-summary-meta" data-admin-status-chip>published</p>
+            <p class="admin-summary-meta" data-admin-word-count>0 kelime</p>
+            <p class="admin-summary-meta" data-admin-reading-time>1 dk</p>
+            <p class="admin-summary-meta" data-admin-status-chip>yayında</p>
           </div>
         </div>
 
@@ -85,9 +85,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               <label>
                 <span class="search-label">publish mode</span>
                 <select class="search-input" name="publishMode">
-                  <option value="published">published</option>
-                  <option value="scheduled">scheduled</option>
-                  <option value="draft">draft</option>
+                  <option value="published">yayınla</option>
+                  <option value="scheduled">zamanla</option>
+                  <option value="draft">taslak</option>
                 </select>
               </label>
 
@@ -96,6 +96,11 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
                 <input class="search-input" type="datetime-local" name="publishAt" value={nowLocal} />
               </label>
             </div>
+
+            <label>
+              <span class="search-label">body</span>
+              <textarea class="search-input admin-textarea" name="body" placeholder="write in markdown..." required></textarea>
+            </label>
 
             <details class="admin-details">
               <summary>meta</summary>
@@ -111,11 +116,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
                 </label>
               </div>
             </details>
-
-            <label>
-              <span class="search-label">body</span>
-              <textarea class="search-input admin-textarea" name="body" placeholder="write in markdown..." required></textarea>
-            </label>
 
             <details class="admin-details">
               <summary>cover image</summary>
@@ -153,7 +153,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               <summary>tag suggestions</summary>
               <div class="admin-details-body">
                 <div class="admin-inline admin-inline-between">
-                  <p class="muted admin-note">light suggestions from the current draft</p>
+                  <p class="muted admin-note">current draft suggestions</p>
                   <button class="provider-pill" type="button" data-admin-refresh-tags>refresh</button>
                 </div>
 
@@ -184,9 +184,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
             <details class="admin-details" data-admin-edit-only hidden>
               <summary>revisions</summary>
               <div class="admin-details-body">
-                <p class="muted admin-note" data-admin-revision-note>load an entry to inspect revisions</p>
+                <p class="muted admin-note" data-admin-revision-note>revizyonlari gormek icin bir yazi ac</p>
                 <div class="admin-revision-list" data-admin-revision-list>
-                  <p class="terminal-line">no entry loaded yet.</p>
+                  <p class="terminal-line">henuz yazi yuklenmedi.</p>
                 </div>
               </div>
             </details>
@@ -196,14 +196,14 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               <div class="admin-details-body">
                 <article class="admin-preview-card">
                   <p class="entry-date" data-admin-preview-date>[{today}]</p>
-                  <h3 class="admin-preview-title" data-admin-preview-title-text>Untitled</h3>
-                  <p class="entry-description" data-admin-preview-description>short deck will appear here.</p>
+                  <h3 class="admin-preview-title" data-admin-preview-title-text>Basliksiz</h3>
+                  <p class="entry-description" data-admin-preview-description>kisa aciklama burada gorunur.</p>
                   <div class="admin-preview-body post-body" data-admin-preview-body>
-                    <p>write in markdown and the preview will update here.</p>
+                    <p>preview burada guncellenir.</p>
                   </div>
                   <div class="admin-publish-result" data-admin-publish-result hidden>
-                    <p class="terminal-line">published successfully.</p>
-                    <a class="terminal-link" href="#" target="_blank" rel="noreferrer" data-admin-live-link>open live post</a>
+                    <p class="terminal-line">kaydedildi.</p>
+                    <a class="terminal-link" href="#" target="_blank" rel="noreferrer" data-admin-live-link>canli yaziyi ac</a>
                   </div>
                 </article>
               </div>
@@ -212,17 +212,17 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
           <section class="admin-tab-panel" data-admin-panel-name="library" role="tabpanel" hidden>
             <div class="section-head">
-              <h2 class="screen-title">EXISTING ENTRIES</h2>
-              <p class="muted admin-note" data-admin-library-note>tap an entry to edit or delete</p>
+              <h2 class="screen-title">MEVCUT YAZILAR</h2>
+              <p class="muted admin-note" data-admin-library-note>duzenle veya sil</p>
             </div>
             <div class="admin-entry-list" data-admin-entry-list>
-              <p class="terminal-line">loading entries...</p>
+              <p class="terminal-line">yazilar yukleniyor...</p>
             </div>
           </section>
 
           <div class="admin-inline admin-actions">
             <button class="submit-button" type="submit" data-admin-submit data-i18n="admin_publish">publish</button>
-            <button class="provider-pill" type="button" data-admin-clear-draft data-i18n="admin_clear">clear local draft</button>
+            <button class="admin-text-action" type="button" data-admin-clear-draft data-i18n="admin_clear">taslağı temizle</button>
             <p class="terminal-line admin-feedback" data-admin-feedback></p>
           </div>
         </form>
@@ -305,7 +305,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     function setAuthenticated(authenticated) {
       authBlock.hidden = authenticated;
       panel.hidden = !authenticated;
-      status.textContent = authenticated ? "session ready." : "locked.";
+      status.textContent = authenticated ? "oturum hazir." : "locked.";
       shell.dataset.adminReady = authenticated ? "true" : "false";
       setMessage("");
     }
@@ -376,7 +376,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
     function renderMarkdownPreview(markdown) {
       const trimmed = (markdown || "").trim();
-      if (!trimmed) return "<p>write in markdown and the preview will update here.</p>";
+      if (!trimmed) return "<p>preview burada görünecek.</p>";
       const blocks = trimmed.split(/\n{2,}/).map((block) => block.trim()).filter(Boolean);
       return blocks
         .map((block) => {
@@ -475,10 +475,10 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         currentImageUrl = "";
       }
       previewImage.hidden = true;
-      revisionList.innerHTML = "<p class='terminal-line'>no entry loaded yet.</p>";
-      revisionNote.textContent = "load an entry to inspect revisions";
+      revisionList.innerHTML = "<p class='terminal-line'>henüz yazı yüklenmedi.</p>";
+      revisionNote.textContent = "revizyonları görmek için bir yazı aç";
       submitButton.textContent = "publish";
-      modeLabel.textContent = "new entry";
+      modeLabel.textContent = "yeni yazi";
       setActiveTab("write");
       syncPublishMode();
       setEditingState(false);
@@ -486,11 +486,11 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     }
 
     function clearDraft() {
-      if (!window.confirm("Clear the local draft?")) return;
+      if (!window.confirm("Yerel taslak temizlensin mi?")) return;
       localStorage.removeItem(storageKey);
       resetFormState();
       updatePreview(true);
-      setMessage("local draft cleared.");
+      setMessage("yerel taslak temizlendi.");
     }
 
     function updateImagePreviewFromFile() {
@@ -526,19 +526,19 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     }
 
     function statusLabel() {
-      return fields.publishMode.value === "draft" ? "draft" : fields.publishMode.value === "scheduled" ? "scheduled" : "published";
+      return fields.publishMode.value === "draft" ? "taslak" : fields.publishMode.value === "scheduled" ? "zamanlı" : "yayında";
     }
 
     function updatePreview(skipDraftSave = false) {
       const slug = slugify(fields.title.value || "untitled");
       const words = countWords(fields.body.value);
       previewDate.textContent = `[${fields.date.value || today}]`;
-      previewTitle.textContent = fields.title.value || "Untitled";
-      previewDescription.textContent = fields.description.value || "short deck will appear here.";
+      previewTitle.textContent = fields.title.value || "Başlıksız";
+      previewDescription.textContent = fields.description.value || "kısa açıklama burada görünür.";
       previewBody.innerHTML = renderMarkdownPreview(fields.body.value);
       entryUrl.textContent = `/journal/${fields.date.value || today}-${slug}/`;
-      wordCount.textContent = `${words} words`;
-      readingTime.textContent = `${readingMinutes(words)} min read`;
+      wordCount.textContent = `${words} kelime`;
+      readingTime.textContent = `${readingMinutes(words)} dk`;
       statusChip.textContent = statusLabel();
       if (!skipDraftSave) saveDraft();
     }
@@ -555,8 +555,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
     function renderLibrary(entries) {
       if (!entries.length) {
-        listContainer.innerHTML = "<p class='terminal-line'>no entries found.</p>";
-        libraryNote.textContent = "0 entries";
+        listContainer.innerHTML = "<p class='terminal-line'>yazi bulunamadi.</p>";
+        libraryNote.textContent = "0 yazi";
         return;
       }
 
@@ -565,21 +565,21 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         return acc;
       }, {});
 
-      libraryNote.textContent = `${entries.length} entries · ${counts.published || 0} published · ${counts.scheduled || 0} scheduled · ${counts.draft || 0} drafts`;
+      libraryNote.textContent = `${entries.length} yazi - ${counts.published || 0} yayinda - ${counts.scheduled || 0} zamanli - ${counts.draft || 0} taslak`;
       listContainer.innerHTML = entries
         .map((entry) => `
-          <article class="admin-entry-card">
+          <article class="admin-entry-row">
             <div>
               <div class="admin-inline">
                 <p class="entry-date">[${escapeHtml(entry.date)}]</p>
                 <span class="admin-status-pill" data-state="${escapeHtml(entry.effectiveStatus)}">${escapeHtml(entry.effectiveStatus)}</span>
               </div>
               <h3 class="admin-entry-title">${escapeHtml(entry.title)}</h3>
-              <p class="admin-entry-meta">${entry.wordCount} words · ${entry.readingMinutes} min · ${entry.revisionCount} revisions</p>
+              <p class="admin-entry-meta">${entry.wordCount} kelime - ${entry.readingMinutes} dk - ${entry.revisionCount} revizyon</p>
             </div>
             <div class="admin-entry-actions">
-              <button class="provider-pill" type="button" data-load-entry="${escapeHtml(entry.path)}">edit</button>
-              <button class="provider-pill admin-danger" type="button" data-delete-entry="${escapeHtml(entry.path)}">delete</button>
+              <button class="provider-pill" type="button" data-load-entry="${escapeHtml(entry.path)}">duzenle</button>
+              <button class="provider-pill admin-danger" type="button" data-delete-entry="${escapeHtml(entry.path)}">sil</button>
             </div>
           </article>
         `)
@@ -588,8 +588,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
     function renderRevisions(revisions) {
       if (!revisions.length) {
-        revisionList.innerHTML = "<p class='terminal-line'>no revisions yet for this entry.</p>";
-        revisionNote.textContent = "0 saved revisions";
+        revisionList.innerHTML = "<p class='terminal-line'>bu yazi icin henuz revizyon yok.</p>";
+        revisionNote.textContent = "0 revizyon";
         return;
       }
 
@@ -602,11 +602,11 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
           <h3 class="admin-entry-title">${escapeHtml(revision.title)}</h3>
           <p class="admin-entry-meta">${revision.wordCount} words · ${escapeHtml(revision.filename)}</p>
           <div class="admin-entry-actions">
-            <button class="provider-pill" type="button" data-restore-revision="${escapeHtml(revision.path)}">restore</button>
+            <button class="provider-pill" type="button" data-restore-revision="${escapeHtml(revision.path)}">geri al</button>
           </div>
         </article>
       `).join("");
-      revisionNote.textContent = `${revisions.length} saved revisions`;
+      revisionNote.textContent = `${revisions.length} revizyon`;
     }
 
     async function loadEntries() {
@@ -910,3 +910,5 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     });
   })();
 </script>
+
+
