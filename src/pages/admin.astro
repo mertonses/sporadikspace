@@ -44,7 +44,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
           <p class="terminal-line admin-status" data-admin-status>session ready.</p>
           <div class="admin-toolbar-actions">
             <button class="provider-pill" type="button" data-admin-reset-form data-i18n="admin_new">new entry</button>
-            <button class="provider-pill" type="button" data-admin-logout data-i18n="admin_lock">lock</button>
           </div>
         </div>
 
@@ -59,8 +58,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         </div>
 
         <div class="admin-tabs" role="tablist" aria-label="Admin sections">
-          <button class="provider-pill active" type="button" role="tab" aria-selected="true" data-admin-tab="write" data-i18n="admin_write">write</button>
           <button class="provider-pill" type="button" role="tab" aria-selected="false" data-admin-tab="library" data-i18n="admin_library">library</button>
+          <button class="provider-pill active" type="button" role="tab" aria-selected="true" data-admin-tab="write" data-i18n="admin_write">write</button>
         </div>
 
         <form class="admin-form" data-admin-form>
@@ -246,7 +245,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     const panel = document.querySelector("[data-admin-panel]");
     const passwordInput = document.querySelector("#admin-password");
     const loginButton = document.querySelector("[data-admin-login]");
-    const logoutButton = document.querySelector("[data-admin-logout]");
     const resetFormButton = document.querySelector("[data-admin-reset-form]");
     const form = document.querySelector("[data-admin-form]");
     const feedback = document.querySelector("[data-admin-feedback]");
@@ -452,6 +450,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     }
 
     function clearDraft() {
+      if (!window.confirm("Clear the local draft?")) return;
       localStorage.removeItem(storageKey);
       resetFormState();
       updatePreview(true);
@@ -693,11 +692,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       }
     }
 
-    async function logout() {
-      await fetch("/api/admin/logout", { method: "POST" });
-      setAuthenticated(false);
-    }
-
     function applyQuickIntent(intent) {
       fields.intent.value = intent;
       if (intent === "draft") {
@@ -754,7 +748,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       }
     });
 
-    logoutButton?.addEventListener("click", logout);
     resetFormButton?.addEventListener("click", () => {
       resetFormState();
       updatePreview(true);
