@@ -66,6 +66,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
           <input type="hidden" name="originalPath" value="" />
           <input type="hidden" name="existingCoverImage" value="" />
           <input type="hidden" name="intent" value="published" />
+          <input type="hidden" name="status" value="published" />
 
           <section class="admin-tab-panel active" data-admin-panel-name="write" role="tabpanel">
             <div class="admin-grid">
@@ -82,15 +83,15 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
             <div class="admin-grid">
               <label>
-                <span class="search-label">status</span>
-                <select class="search-input" name="status">
+                <span class="search-label">publish mode</span>
+                <select class="search-input" name="publishMode">
                   <option value="published">published</option>
                   <option value="scheduled">scheduled</option>
                   <option value="draft">draft</option>
                 </select>
               </label>
 
-              <label>
+              <label data-admin-schedule-wrap hidden>
                 <span class="search-label">publish at</span>
                 <input class="search-input" type="datetime-local" name="publishAt" value={nowLocal} />
               </label>
@@ -155,7 +156,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               </div>
             </details>
 
-            <details class="admin-details">
+            <details class="admin-details" data-admin-edit-only hidden>
               <summary>tag suggestions</summary>
               <div class="admin-details-body">
                 <div class="admin-inline admin-inline-between">
@@ -187,7 +188,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               </div>
             </details>
 
-            <details class="admin-details">
+            <details class="admin-details" data-admin-edit-only hidden>
               <summary>revisions</summary>
               <div class="admin-details-body">
                 <p class="muted admin-note" data-admin-revision-note>load an entry to inspect revisions</p>
@@ -251,6 +252,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     const status = document.querySelector("[data-admin-status]");
     const submitButton = document.querySelector("[data-admin-submit]");
     const clearDraftButton = document.querySelector("[data-admin-clear-draft]");
+    const scheduleWrap = document.querySelector("[data-admin-schedule-wrap]");
     const entryUrl = document.querySelector("[data-admin-entry-url]");
     const wordCount = document.querySelector("[data-admin-word-count]");
     const readingTime = document.querySelector("[data-admin-reading-time]");
@@ -276,6 +278,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     const refreshTagsButton = document.querySelector("[data-admin-refresh-tags]");
     const tabButtons = [...document.querySelectorAll("[data-admin-tab]")];
     const tabPanels = [...document.querySelectorAll("[data-admin-panel-name]")];
+    const editOnlyPanels = [...document.querySelectorAll("[data-admin-edit-only]")];
 
     if (!form) return;
 
@@ -286,6 +289,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       title: form.querySelector('[name="title"]'),
       date: form.querySelector('[name="date"]'),
       status: form.querySelector('[name="status"]'),
+      publishMode: form.querySelector('[name="publishMode"]'),
       publishAt: form.querySelector('[name="publishAt"]'),
       description: form.querySelector('[name="description"]'),
       tags: form.querySelector('[name="tags"]'),
@@ -325,6 +329,38 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         panelNode.classList.toggle("active", active);
         panelNode.hidden = !active;
       });
+    }
+
+    function isEditingEntry() {
+      return Boolean(fields.originalPath.value);
+    }
+
+    function setEditingState(editing) {
+      editOnlyPanels.forEach((panelNode) => {
+        panelNode.hidden = !editing;
+        if (!editing) {
+          panelNode.open = false;
+        }
+      });
+    }
+
+    function derivePublishMode(statusValue, publishAtValue) {
+      if (statusValue === "draft") return "draft";
+      if (statusValue === "scheduled" || publishAtValue) return "scheduled";
+      return "published";
+    }
+
+    function syncPublishMode() {
+      const mode = fields.publishMode.value || "published";
+      fields.status.value = mode;
+      scheduleWrap.hidden = mode !== "scheduled";
+
+      if (mode === "scheduled") {
+        if (!fields.publishAt.value) fields.publishAt.value = `${fields.date.value || today}T09:00`;
+        return;
+      }
+
+      fields.publishAt.value = "";
     }
 
     function slugify(value) {
@@ -383,6 +419,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         existingCoverImage: fields.existingCoverImage.value,
         title: fields.title.value,
         date: fields.date.value,
+        publishMode: fields.publishMode.value,
         status: fields.status.value,
         publishAt: fields.publishAt.value,
         description: fields.description.value,
@@ -409,7 +446,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         fields.existingCoverImage.value = snapshot.existingCoverImage || "";
         fields.title.value = snapshot.title || "";
         fields.date.value = snapshot.date || fields.date.value;
-        fields.status.value = snapshot.status || "published";
+        fields.publishMode.value = snapshot.publishMode || derivePublishMode(snapshot.status || "published", snapshot.publishAt || "");
+        fields.status.value = snapshot.status || fields.publishMode.value || "published";
         fields.publishAt.value = snapshot.publishAt || fields.publishAt.value;
         fields.description.value = snapshot.description || "";
         fields.tags.value = snapshot.tags || "";
@@ -419,6 +457,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         fields.removeCoverImage.checked = Boolean(snapshot.removeCoverImage);
         currentRemoteImage = fields.existingCoverImage.value || "";
         setActiveTab(snapshot.activeTab || "write");
+        syncPublishMode();
+        setEditingState(isEditingEntry());
       } catch {
         localStorage.removeItem(storageKey);
       }
@@ -431,8 +471,9 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       fields.existingCoverImage.value = "";
       fields.intent.value = "published";
       fields.date.value = today;
+      fields.publishMode.value = "published";
       fields.status.value = "published";
-      fields.publishAt.value = nowLocal;
+      fields.publishAt.value = "";
       fields.removeCoverImage.checked = false;
       currentRemoteImage = "";
       publishResult.hidden = preservePublishResult ? publishResult.hidden : true;
@@ -446,6 +487,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       submitButton.textContent = "publish";
       modeLabel.textContent = "new entry";
       setActiveTab("write");
+      syncPublishMode();
+      setEditingState(false);
       suppressDraftWrite = false;
     }
 
@@ -490,7 +533,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     }
 
     function statusLabel() {
-      return fields.status.value === "draft" ? "draft" : fields.status.value === "scheduled" ? "scheduled" : "published";
+      return fields.publishMode.value === "draft" ? "draft" : fields.publishMode.value === "scheduled" ? "scheduled" : "published";
     }
 
     function updatePreview(skipDraftSave = false) {
@@ -591,6 +634,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       fields.existingCoverImage.value = entry.coverImage || "";
       fields.title.value = entry.title || "";
       fields.date.value = entry.date || today;
+      fields.publishMode.value = derivePublishMode(entry.status || "published", entry.publishAtInput || "");
       fields.status.value = entry.status || "published";
       fields.publishAt.value = entry.publishAtInput || "";
       fields.description.value = entry.description || "";
@@ -603,6 +647,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       submitButton.textContent = "update";
       modeLabel.textContent = "editing entry";
       suppressDraftWrite = false;
+      syncPublishMode();
+      setEditingState(true);
       updatePreview(true);
       updateImagePreviewFromRemote();
       await loadRevisions(path);
@@ -695,15 +741,13 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     function applyQuickIntent(intent) {
       fields.intent.value = intent;
       if (intent === "draft") {
-        fields.status.value = "draft";
-        fields.publishAt.value = "";
+        fields.publishMode.value = "draft";
       } else if (intent === "scheduled") {
-        fields.status.value = "scheduled";
-        if (!fields.publishAt.value) fields.publishAt.value = `${fields.date.value || today}T09:00`;
+        fields.publishMode.value = "scheduled";
       } else {
-        fields.status.value = "published";
-        fields.publishAt.value = "";
+        fields.publishMode.value = "published";
       }
+      syncPublishMode();
       updatePreview();
       form.requestSubmit();
     }
@@ -714,7 +758,10 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       submitButton.disabled = true;
       try {
         const formData = new FormData(form);
+        syncPublishMode();
         formData.set("removeCoverImage", formData.get("removeCoverImage") ? "true" : "false");
+        formData.set("status", fields.status.value);
+        formData.set("publishAt", fields.publishAt.value);
         const response = await fetch("/api/admin/publish", { method: "POST", body: formData });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Publish failed.");
@@ -733,6 +780,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         updateImagePreviewFromRemote();
         if (data.entryPath) await loadRevisions(data.entryPath);
         await loadEntries();
+        setEditingState(true);
       } catch (error) {
         setMessage(error.message || "Publish failed.", "error");
       } finally {
@@ -829,7 +877,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     [
       fields.title,
       fields.date,
-      fields.status,
+      fields.publishMode,
       fields.publishAt,
       fields.description,
       fields.tags,
@@ -838,9 +886,15 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       fields.coverCaption
     ].forEach((field) => field?.addEventListener("input", () => updatePreview()));
 
-    fields.status?.addEventListener("change", () => {
-      if (fields.status.value === "scheduled" && !fields.publishAt.value) fields.publishAt.value = `${fields.date.value || today}T09:00`;
-      if (fields.status.value !== "scheduled") fields.publishAt.value = "";
+    fields.publishMode?.addEventListener("change", () => {
+      syncPublishMode();
+      updatePreview();
+    });
+
+    fields.date?.addEventListener("change", () => {
+      if (fields.publishMode.value === "scheduled" && !fields.publishAt.value) {
+        fields.publishAt.value = `${fields.date.value || today}T09:00`;
+      }
       updatePreview();
     });
 
@@ -862,6 +916,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     });
 
     restoreDraft();
+    syncPublishMode();
+    setEditingState(isEditingEntry());
     updatePreview(true);
     updateImagePreviewFromRemote();
     verifySession().catch(() => {
