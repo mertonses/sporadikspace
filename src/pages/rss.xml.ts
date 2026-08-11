@@ -1,6 +1,6 @@
 import rss from "@astrojs/rss";
 import { getCollection } from "astro:content";
-import { entryDate, entryTitle, entryUrl, publishedEntries } from "../lib/journal";
+import { entryDate, entrySlug, entryTitle, entryUrl, publishedEntries } from "../lib/journal";
 import { siteConfig } from "../lib/site";
 
 export async function GET(context: { site: string | undefined }) {
@@ -15,7 +15,8 @@ export async function GET(context: { site: string | undefined }) {
       description: entry.data.description || entryTitle(entry),
       pubDate: entryDate(entry),
       link: entryUrl(entry),
-      categories: entry.data.tags
+      categories: entry.data.tags,
+      customData: `<guid isPermaLink="false">${entrySlug(entry)}</guid>`
     })),
     customData: `<language>tr</language>`
   });
