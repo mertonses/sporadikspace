@@ -97,7 +97,7 @@ export function stripMarkdown(source: string) {
 }
 
 export function groupArchive(entries: JournalEntry[]) {
-  const grouped = new Map<number, Map<number, { label: string; entries: JournalEntry[] }>>();
+  const grouped = new Map<number, Map<number, { label: string; month: number; entries: JournalEntry[] }>>();
 
   for (const entry of entries) {
     const date = entryDate(entry);
@@ -111,7 +111,7 @@ export function groupArchive(entries: JournalEntry[]) {
     if (!grouped.has(year)) grouped.set(year, new Map());
     const yearMap = grouped.get(year)!;
     if (!yearMap.has(month)) {
-      yearMap.set(month, { label: monthLabel, entries: [] });
+      yearMap.set(month, { label: monthLabel, month, entries: [] });
     }
     yearMap.get(month)!.entries.push(entry);
   }

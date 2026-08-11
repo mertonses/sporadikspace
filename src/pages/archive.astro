@@ -23,7 +23,14 @@ const archive = groupArchive(entries);
           <h2 class="year-title">{yearGroup.year}</h2>
           {yearGroup.months.map((monthGroup) => (
             <section class="archive-month">
-              <h3 class="month-title">{monthGroup.label}</h3>
+              <h3
+                class="month-title"
+                data-localize-month
+                data-month={String(monthGroup.month + 1).padStart(2, "0")}
+                data-year={String(yearGroup.year)}
+              >
+                {monthGroup.label}
+              </h3>
               <EntryList entries={monthGroup.entries} />
             </section>
           ))}

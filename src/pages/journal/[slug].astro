@@ -44,7 +44,9 @@ const shareText = `${shareTitle} - sporadik.space`;
     <a href="/" class="terminal-link back-link" data-i18n="journal_back">&lt; return to index</a>
     <h1 class="post-title">{entryTitle(entry)}</h1>
     <div class="post-meta">
-      <span>[{formatDate(entryDate(entry))}]</span>
+      <span data-localize-date="long" data-date-iso={entryDate(entry).toISOString()}>
+        [{formatDate(entryDate(entry))}]
+      </span>
       {
         entry.data.tags.length > 0 && (
           <ul class="tag-list" role="list">

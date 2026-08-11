@@ -219,6 +219,45 @@ const pageTitle = title === siteConfig.title ? title : `${title} | ${siteConfig.
         node.setAttribute("aria-label", t(node.dataset.i18nAriaLabel));
       });
 
+      const longDateFormatter = new Intl.DateTimeFormat(
+        locale === "tr" ? "tr-TR" : "en-GB",
+        {
+          year: "numeric",
+          month: "long",
+          day: "2-digit",
+          timeZone: "UTC"
+        }
+      );
+
+      const monthFormatter = new Intl.DateTimeFormat(
+        locale === "tr" ? "tr-TR" : "en-US",
+        {
+          month: "long",
+          timeZone: "UTC"
+        }
+      );
+
+      document.querySelectorAll("[data-localize-date]").forEach((node) => {
+        const iso = node.getAttribute("data-date-iso");
+        if (!iso) return;
+
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return;
+
+        node.textContent = `[${longDateFormatter.format(date)}]`;
+      });
+
+      document.querySelectorAll("[data-localize-month]").forEach((node) => {
+        const year = node.getAttribute("data-year");
+        const month = node.getAttribute("data-month");
+        if (!year || !month) return;
+
+        const date = new Date(`${year}-${month}-01T00:00:00.000Z`);
+        if (Number.isNaN(date.getTime())) return;
+
+        node.textContent = monthFormatter.format(date);
+      });
+
       window.__sporadikLocale = locale;
       window.__sporadikT = t;
     })();
