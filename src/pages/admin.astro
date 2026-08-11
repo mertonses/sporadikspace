@@ -81,22 +81,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               </label>
             </div>
 
-            <div class="admin-grid">
-              <label>
-                <span class="search-label">publish mode</span>
-                <select class="search-input" name="publishMode">
-                  <option value="published">yayınla</option>
-                  <option value="scheduled">zamanla</option>
-                  <option value="draft">taslak</option>
-                </select>
-              </label>
-
-              <label data-admin-schedule-wrap hidden>
-                <span class="search-label">publish at</span>
-                <input class="search-input" type="datetime-local" name="publishAt" value={nowLocal} />
-              </label>
-            </div>
-
             <label>
               <span class="search-label">body</span>
               <textarea class="search-input admin-textarea" name="body" placeholder="write in markdown..." required></textarea>
@@ -208,6 +192,22 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
                 </article>
               </div>
             </details>
+
+            <div class="admin-grid">
+              <label>
+                <span class="search-label">publish mode</span>
+                <select class="search-input" name="publishMode">
+                  <option value="published">published</option>
+                  <option value="scheduled">scheduled</option>
+                  <option value="draft">draft</option>
+                </select>
+              </label>
+
+              <label data-admin-schedule-wrap hidden>
+                <span class="search-label">publish at</span>
+                <input class="search-input" type="datetime-local" name="publishAt" value={nowLocal} />
+              </label>
+            </div>
           </section>
 
           <section class="admin-tab-panel" data-admin-panel-name="library" role="tabpanel" hidden>
