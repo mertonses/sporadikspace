@@ -306,7 +306,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       authBlock.hidden = authenticated;
       panel.hidden = !authenticated;
       status.textContent = authenticated ? "session ready." : "locked.";
-      shell.dataset.adminReady = "true";
+      shell.dataset.adminReady = authenticated ? "true" : "false";
       setMessage("");
     }
 

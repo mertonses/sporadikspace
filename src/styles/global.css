@@ -795,6 +795,12 @@ img {
   gap: 1rem;
 }
 
+.admin-auth[hidden],
+.admin-panel[hidden],
+.admin-tab-panel[hidden] {
+  display: none !important;
+}
+
 .admin-shell[data-admin-ready="false"] .admin-auth,
 .admin-shell[data-admin-ready="false"] .admin-panel {
   display: none;
