@@ -10,7 +10,7 @@ export async function GET() {
     description: entry.data.description,
     tags: entry.data.tags,
     date: shortDate(entryDate(entry)),
-    body: stripMarkdown(entry.body)
+    body: stripMarkdown(entry.body ?? "")
   }));
 
   return new Response(JSON.stringify(payload), {

@@ -124,6 +124,7 @@ export function groupArchive(entries: JournalEntry[]) {
         .sort((a, b) => b[0] - a[0])
         .map(([, data]) => ({
           label: data.label,
+          month: data.month,
           entries: sortEntries(data.entries)
         }))
     }));

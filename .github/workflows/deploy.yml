@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
+      PUBLIC_DEFAULT_SUBSCRIBE_PROVIDER: buttondown
+      PUBLIC_BUTTONDOWN_USERNAME: sporadik
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +40,12 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
+
+      - name: Verify live deployment
+        run: |
+          curl --fail --silent --show-error --location --retry 5 --retry-delay 5 https://sporadik.space/
+          curl --fail --silent --show-error --location --retry 5 --retry-delay 5 https://sporadik.space/search-index.json
+          curl --fail --silent --show-error --location --retry 5 --retry-delay 5 https://sporadik.space/rss.xml
 
       - name: Send latest journal entry to Buttondown
         if: ${{ env.BUTTONDOWN_API_KEY != '' }}

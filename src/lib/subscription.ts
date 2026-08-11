@@ -15,7 +15,7 @@ export type SubscriptionProvider = {
 };
 
 export function getSubscriptionProviders(): SubscriptionProvider[] {
-  const buttondownUsername = import.meta.env.PUBLIC_BUTTONDOWN_USERNAME ?? "sporadik";
+  const buttondownUsername = import.meta.env.PUBLIC_BUTTONDOWN_USERNAME ?? "";
   const buttondownAction =
     import.meta.env.PUBLIC_BUTTONDOWN_ACTION ??
     (buttondownUsername
@@ -24,7 +24,7 @@ export function getSubscriptionProviders(): SubscriptionProvider[] {
   const beehiivAction = import.meta.env.PUBLIC_BEEHIIV_ACTION ?? "";
   const convertKitAction = import.meta.env.PUBLIC_CONVERTKIT_ACTION ?? "";
 
-  return [
+  const providers: SubscriptionProvider[] = [
     {
       key: "buttondown",
       label: "Buttondown",
@@ -56,4 +56,13 @@ export function getSubscriptionProviders(): SubscriptionProvider[] {
       enabled: Boolean(convertKitAction)
     }
   ];
+
+  const preferred = import.meta.env.PUBLIC_DEFAULT_SUBSCRIBE_PROVIDER as SubscriptionProviderKey | undefined;
+  if (!preferred) return providers;
+
+  return [...providers].sort((left, right) => {
+    if (left.key === preferred) return -1;
+    if (right.key === preferred) return 1;
+    return 0;
+  });
 }

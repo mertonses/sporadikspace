@@ -30,10 +30,12 @@
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^7.2.0",
-    "openai": "^6.6.0",
-    "typescript": "^7.0.2"
+    "openai": "^6.6.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@cloudflare/workers-types": "^5.20260811.1",
+    "typescript": "^5.9.3",
     "wrangler": "^4.119.0"
   }
 }

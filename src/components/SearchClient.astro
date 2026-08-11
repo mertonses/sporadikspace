@@ -62,13 +62,28 @@ const source = "/search-index.json";
     for (const item of items) {
       const li = document.createElement("li");
       li.className = "entry-row";
-      li.innerHTML = `
-        <a class="entry-link" href="/journal/${item.slug}/">
-          <span class="entry-date">[${item.date}]</span>
-          <span class="entry-title">${item.title}</span>
-          ${item.description ? `<span class="entry-description">${item.description}</span>` : ""}
-        </a>
-      `;
+      const link = document.createElement("a");
+      link.className = "entry-link";
+      link.href = `/journal/${encodeURIComponent(item.slug)}/`;
+
+      const date = document.createElement("span");
+      date.className = "entry-date";
+      date.textContent = `[${item.date}]`;
+
+      const title = document.createElement("span");
+      title.className = "entry-title";
+      title.textContent = item.title || "";
+
+      link.append(date, title);
+
+      if (item.description) {
+        const description = document.createElement("span");
+        description.className = "entry-description";
+        description.textContent = item.description;
+        link.append(description);
+      }
+
+      li.append(link);
       list.appendChild(li);
     }
   }

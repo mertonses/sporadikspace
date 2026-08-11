@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types" />
+
 interface Env {
   ASSETS: Fetcher;
   ADMIN_PASSWORD: string;
@@ -90,6 +92,10 @@ const JSON_HEADERS = {
 };
 
 const encoder = new TextEncoder();
+const loginAttempts = new Map<string, { failures: number; windowStartedAt: number; blockedUntil: number }>();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_FAILURES = 5;
+const LOGIN_BLOCK_MS = 15 * 60 * 1000;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -140,7 +146,7 @@ export default {
         return handlePublish(request, env);
       }
 
-      return env.ASSETS.fetch(request);
+      return withSecurityHeaders(await env.ASSETS.fetch(request));
     } catch (error) {
       if (error instanceof HttpError) {
         return jsonResponse({ error: error.message }, { status: error.status });
@@ -163,6 +169,14 @@ async function handleLogin(request: Request, env: Env) {
   }
 
   let payload: { password?: string };
+  const clientKey = getClientKey(request);
+  const retryAfter = loginRetryAfter(clientKey);
+  if (retryAfter > 0) {
+    return jsonResponse(
+      { error: "Too many login attempts. Try again later." },
+      { status: 429, headers: { "retry-after": String(retryAfter) } }
+    );
+  }
 
   try {
     payload = await request.json();
@@ -171,8 +185,11 @@ async function handleLogin(request: Request, env: Env) {
   }
 
   if (!safeEquals(payload.password ?? "", env.ADMIN_PASSWORD)) {
+    recordLoginFailure(clientKey);
     return jsonResponse({ error: "Password is incorrect." }, { status: 401 });
   }
+
+  loginAttempts.delete(clientKey);
 
   const expiresAt = Date.now() + SESSION_MAX_AGE * 1000;
   const token = await createSessionToken(expiresAt, env.ADMIN_SESSION_SECRET);
@@ -1378,6 +1395,47 @@ function normalizeForConcepts(value: string) {
     .toLocaleLowerCase("tr-TR")
     .replace(/['’`"]/g, "")
     .replace(/[^\p{L}0-9\s-]/gu, " ");
+}
+
+function getClientKey(request: Request) {
+  return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+function loginRetryAfter(clientKey: string) {
+  const attempt = loginAttempts.get(clientKey);
+  if (!attempt) return 0;
+
+  const now = Date.now();
+  if (attempt.blockedUntil > now) return Math.ceil((attempt.blockedUntil - now) / 1000);
+  if (now - attempt.windowStartedAt >= LOGIN_WINDOW_MS) {
+    loginAttempts.delete(clientKey);
+    return 0;
+  }
+  return 0;
+}
+
+function recordLoginFailure(clientKey: string) {
+  const now = Date.now();
+  const current = loginAttempts.get(clientKey);
+  const attempt = !current || now - current.windowStartedAt >= LOGIN_WINDOW_MS
+    ? { failures: 0, windowStartedAt: now, blockedUntil: 0 }
+    : current;
+
+  attempt.failures += 1;
+  if (attempt.failures >= LOGIN_MAX_FAILURES) {
+    attempt.blockedUntil = now + LOGIN_BLOCK_MS;
+  }
+  loginAttempts.set(clientKey, attempt);
+}
+
+function withSecurityHeaders(response: Response) {
+  const headers = new Headers(response.headers);
+  headers.set("content-security-policy", "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self' https://buttondown.com https://*.beehiiv.com https://*.convertkit.com;");
+  headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("permissions-policy", "camera=(), microphone=(), geolocation=(), payment=()");
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
 function normalizeTag(value: string) {
