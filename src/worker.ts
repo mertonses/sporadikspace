@@ -90,6 +90,14 @@ const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "cache-control": "no-store"
 };
+const SECURITY_HEADERS = {
+  "content-security-policy": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self' https://buttondown.com https://*.beehiiv.com https://*.convertkit.com;",
+  "strict-transport-security": "max-age=31536000; includeSubDomains",
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=()"
+};
 
 const encoder = new TextEncoder();
 const loginAttempts = new Map<string, { failures: number; windowStartedAt: number; blockedUntil: number }>();
@@ -1337,6 +1345,7 @@ function safeEquals(left: string, right: string) {
 function jsonResponse(payload: unknown, init: ResponseInit & { headers?: Record<string, string> } = {}) {
   const headers = {
     ...JSON_HEADERS,
+    ...SECURITY_HEADERS,
     ...(init.headers ?? {})
   };
 
@@ -1430,11 +1439,7 @@ function recordLoginFailure(clientKey: string) {
 
 function withSecurityHeaders(response: Response) {
   const headers = new Headers(response.headers);
-  headers.set("content-security-policy", "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self' https://buttondown.com https://*.beehiiv.com https://*.convertkit.com;");
-  headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
-  headers.set("x-content-type-options", "nosniff");
-  headers.set("referrer-policy", "strict-origin-when-cross-origin");
-  headers.set("permissions-policy", "camera=(), microphone=(), geolocation=(), payment=()");
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) headers.set(name, value);
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
