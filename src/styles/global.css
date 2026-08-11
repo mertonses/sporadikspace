@@ -802,7 +802,6 @@ img {
   display: none !important;
 }
 
-.admin-shell[data-admin-ready="false"] .admin-auth,
 .admin-shell[data-admin-ready="false"] .admin-panel {
   display: none;
 }
