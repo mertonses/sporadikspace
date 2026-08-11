@@ -888,18 +888,8 @@ img {
   padding: 0 1rem 1rem;
 }
 
-.admin-subpanel-quick {
-  gap: 0.7rem;
-}
-
 .admin-actions {
   align-items: center;
-}
-
-.admin-quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
 }
 
 .admin-textarea {
@@ -1804,11 +1794,6 @@ figure figcaption {
 
   .admin-tabs .provider-pill {
     flex: 1 1 calc(50% - 0.55rem);
-  }
-
-  .admin-quick-actions .submit-button,
-  .admin-quick-actions .provider-pill {
-    flex: 1 1 100%;
   }
 
   .admin-feedback {

@@ -97,32 +97,25 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
               </label>
             </div>
 
-            <label>
-              <span class="search-label">description</span>
-              <input class="search-input" type="text" name="description" placeholder="short deck for homepage and meta" />
-            </label>
+            <details class="admin-details">
+              <summary>meta</summary>
+              <div class="admin-details-body">
+                <label>
+                  <span class="search-label">description</span>
+                  <input class="search-input" type="text" name="description" placeholder="short deck for homepage and meta" />
+                </label>
 
-            <label>
-              <span class="search-label">tags</span>
-              <input class="search-input" type="text" name="tags" placeholder="deneme, notlar, gozlem" />
-            </label>
+                <label>
+                  <span class="search-label">tags</span>
+                  <input class="search-input" type="text" name="tags" placeholder="deneme, notlar, gozlem" />
+                </label>
+              </div>
+            </details>
 
             <label>
               <span class="search-label">body</span>
               <textarea class="search-input admin-textarea" name="body" placeholder="write in markdown..." required></textarea>
             </label>
-
-            <div class="admin-subpanel admin-subpanel-quick">
-              <div class="section-head">
-                <h2 class="screen-title">QUICK ACTIONS</h2>
-                <p class="muted admin-note">save draft, schedule or publish</p>
-              </div>
-              <div class="admin-quick-actions">
-                <button class="provider-pill" type="button" data-admin-quick="draft">save draft</button>
-                <button class="provider-pill" type="button" data-admin-quick="scheduled">schedule</button>
-                <button class="submit-button" type="button" data-admin-quick="published">publish now</button>
-              </div>
-            </div>
 
             <details class="admin-details">
               <summary>cover image</summary>
@@ -736,20 +729,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       } catch (error) {
         setMessage(error.message || "Login failed.", "error");
       }
-    }
-
-    function applyQuickIntent(intent) {
-      fields.intent.value = intent;
-      if (intent === "draft") {
-        fields.publishMode.value = "draft";
-      } else if (intent === "scheduled") {
-        fields.publishMode.value = "scheduled";
-      } else {
-        fields.publishMode.value = "published";
-      }
-      syncPublishMode();
-      updatePreview();
-      form.requestSubmit();
     }
 
     async function submitForm(event) {
