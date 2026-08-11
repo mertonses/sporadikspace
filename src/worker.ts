@@ -146,6 +146,12 @@ export default {
         return jsonResponse({ error: error.message }, { status: error.status });
       }
 
+      console.error("sporadik worker request failed", {
+        method: request.method,
+        url: request.url,
+        error: error instanceof Error ? error.stack || error.message : String(error)
+      });
+
       return jsonResponse({ error: "Unexpected server error." }, { status: 500 });
     }
   }
@@ -493,17 +499,18 @@ async function handlePublish(request: Request, env: Env) {
     publishAt = "";
   }
 
-  const slug = slugify(title);
-  const filename = `${date}-${slug}.md`;
-  const entryPath = `${JOURNAL_DIRECTORY}/${filename}`;
-  const branch = env.GITHUB_BRANCH || "main";
-
   let currentEntry: EntryRecord | null = null;
   let currentSource = "";
   if (originalPath) {
     currentSource = await fetchRepoText(env, originalPath);
     currentEntry = parseEntry(originalPath, currentSource);
   }
+
+  const branch = env.GITHUB_BRANCH || "main";
+  const slug = currentEntry?.slug?.trim() || slugify(title);
+  const assetSlug = slugify(slug);
+  const filename = `${date}-${slug}.md`;
+  const entryPath = `${JOURNAL_DIRECTORY}/${filename}`;
 
   if (!currentEntry || currentEntry.path !== entryPath) {
     await ensurePathMissing(env, branch, entryPath);
@@ -520,7 +527,7 @@ async function handlePublish(request: Request, env: Env) {
   if (imageFile instanceof File && imageFile.size > 0) {
     const extension = extensionForFile(imageFile);
     imageAsset = {
-      path: `public/images/posts/${slug}/cover.${extension}`,
+      path: `public/images/posts/${assetSlug}/cover.${extension}`,
       buffer: await imageFile.arrayBuffer()
     };
   }
@@ -1370,7 +1377,7 @@ function normalizeForConcepts(value: string) {
     .normalize("NFC")
     .toLocaleLowerCase("tr-TR")
     .replace(/['’`"]/g, "")
-    .replace(/[^a-z0-9çğıöşü\s-]/g, " ");
+    .replace(/[^\p{L}0-9\s-]/gu, " ");
 }
 
 function normalizeTag(value: string) {
@@ -1393,13 +1400,21 @@ function extractConceptTokens(source: string) {
     "yerine", "yine", "yok", "zaten", "zira"
   ]);
 
+  const blockedConcepts = new Set([
+    "ver", "kal", "yap", "bak", "gel", "git", "al", "et", "ol", "kukla", "kuklaci"
+  ]);
+
   const counts = new Map<string, number>();
   const tokens = (normalizeForConcepts(source).match(/\p{L}[\p{L}-]{2,}/gu) ?? [])
     .map((token) => token.replace(/^-+|-+$/g, ""))
     .map((token) => token.replace(/[0-9]+/g, ""))
+    .map(normalizeConceptToken)
     .map((token) => token.trim())
     .filter((token) => token.length >= 4)
-    .filter((token) => !stopwords.has(token));
+    .filter((token) => !stopwords.has(token))
+    .filter((token) => !blockedConcepts.has(token))
+    .filter((token) => !isNarrativeConcept(token))
+    .filter((token) => !isRelationalConcept(token));
 
   for (const token of tokens) {
     counts.set(token, (counts.get(token) ?? 0) + 1);
@@ -1427,6 +1442,94 @@ function extractConceptPhrases(tokens: string[]) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"))
     .map(([phrase]) => phrase)
     .filter((phrase, index, list) => !list.some((other, otherIndex) => otherIndex < index && other.includes(phrase)));
+}
+
+function normalizeConceptToken(token: string) {
+  let value = token.normalize("NFC").replace(/^-+|-+$/g, "");
+
+  const literalSuffixes = [
+    "lerinizden", "larinizdan", "lerinizde", "larinizda", "lerinden", "larindan",
+    "lerimiz", "larimiz", "lerden", "lardan", "lerde", "larda", "lerin", "larin",
+    "lere", "lara", "deki", "daki", "teki", "taki", "ligin", "ligi", "lugu", "lugu",
+    "lik", "lik", "luk", "luk", "maktan", "mekten", "makta", "mekte", "masi", "mesi",
+    "mayi", "meyi", "mak", "mek"
+  ];
+
+  const suffix = literalSuffixes.find((item) => value.endsWith(item) && value.length - item.length >= 4);
+  if (suffix) {
+    value = value.slice(0, -suffix.length);
+  }
+
+  const patternSuffixes = [
+    /(?:t|d)(?:a|e)y?(?:ken|im|ım|um|üm|sin|sın|sun|sün|iz|ız|uz|üz|dir|dır|dur|dür|dim|dım|dum|düm|tim|tım|tum|tüm|dik|dık|duk|dük|ler|lar)$/u,
+    /(?:t|d)(?:a|e)$/u,
+    /(?:y)?(?:dim|dım|dum|düm|tim|tım|tum|tüm|dik|dık|duk|dük|ken)$/u,
+    /(?:y)?(?:im|ım|um|üm|sin|sın|sun|sün|iz|ız|uz|üz)$/u
+  ];
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const pattern of patternSuffixes) {
+      const next = value.replace(pattern, "");
+      if (next !== value && next.length >= 4) {
+        value = next;
+        changed = true;
+        break;
+      }
+    }
+  }
+
+  const verbLikeSuffixes = [
+    /(?:d|t)(?:i|ı|u|ü)$/u,
+    /(?:m|n|k)?(?:s|y)?(?:mıs|mis|mus|müs|mış|miş|muş|müş)$/u,
+    /(?:yor)$/u
+  ];
+
+  for (const pattern of verbLikeSuffixes) {
+    const next = value.replace(pattern, "");
+    if (next !== value && next.length >= 4) {
+      value = next;
+    }
+  }
+
+  if (value.endsWith("g") && value.length > 4) {
+    value = `${value.slice(0, -1)}k`;
+  }
+
+  if (value.endsWith("gı") || value.endsWith("gi") || value.endsWith("gu") || value.endsWith("gü")) {
+    value = `${value.slice(0, -1)}k`;
+  }
+
+  return value;
+}
+
+function simplifyConceptToken(token: string) {
+  return token
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/İ/g, "i")
+    .replace(/ç/g, "c")
+    .replace(/ğ/g, "g")
+    .replace(/ö/g, "o")
+    .replace(/ş/g, "s")
+    .replace(/ü/g, "u")
+    .toLocaleLowerCase("tr-TR");
+}
+
+function isNarrativeConcept(token: string) {
+  const simplified = simplifyConceptToken(token);
+  return new Set([
+    "de", "di", "soyle", "ver", "verd", "kal", "yap", "bak", "gel", "git", "al",
+    "et", "ol", "isit", "gor", "izle", "iste", "bil", "san", "bul", "dinle",
+    "ogren", "takil", "acil", "kapan", "cik", "cevir", "seyret", "ded", "anla"
+  ]).has(simplified);
+}
+
+function isRelationalConcept(token: string) {
+  const simplified = simplifyConceptToken(token);
+  return ["arasin", "arasi", "arasinda", "arasindan", "arasina"].includes(simplified);
 }
 
 function isWeakTag(value: string) {

@@ -192,6 +192,10 @@
   text-decoration-color: var(--line-strong);
 }
 
+.home-rss-link-mobile {
+  display: none;
+}
+
 
 /* =========================================================
    RESPONSIVE
@@ -210,10 +214,16 @@
 }
 
 @media (max-width: 720px) {
+  .masthead {
+    position: relative;
+  }
+
+  .brand {
+    padding-right: 6.2rem;
+  }
+
   .masthead-tools {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.9rem;
+    display: block;
   }
 
   .masthead-tools .nav-list {
@@ -221,6 +231,9 @@
   }
 
   .theme-switcher {
+    position: absolute;
+    top: 0;
+    right: 0;
     margin-top: 0;
   }
 
@@ -231,14 +244,34 @@
   .home-sidebar {
     display: none;
   }
+
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+  }
+
+  .home-rss-link-desktop {
+    display: none;
+  }
+
+  .home-rss-link-mobile {
+    display: inline-block;
+    margin-top: 1rem;
+  }
 }
 
 @media (max-width: 420px) {
   .theme-switcher {
-    width: 100%;
+    width: auto;
+    gap: 0.1rem;
+    padding: 0.12rem;
   }
 
   .theme-button {
-    flex: 1;
+    min-height: 1.9rem;
+    padding: 0.28rem 0.5rem;
+    font-size: 0.68rem;
+    flex: 0 0 auto;
   }
 }

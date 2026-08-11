@@ -1,4 +1,4 @@
-import type { CollectionEntry } from "astro:content";
+﻿import type { CollectionEntry } from "astro:content";
 
 export type JournalEntry = CollectionEntry<"journal">;
 export type EntryStatus = "draft" | "scheduled" | "published";
@@ -141,60 +141,35 @@ export function yearlyCounts(entries: JournalEntry[]) {
 }
 
 export function tagCloud(entries: JournalEntry[]) {
-  const unigramStopwords = new Set([
+  const stopwords = new Set([
     "acaba", "ait", "ama", "ancak", "arada", "artik", "asil", "aslinda", "az", "bana", "bazen",
     "bazi", "belki", "ben", "bence", "beni", "benim", "beri", "bile", "bilhassa", "bir", "biraz",
-    "bircok", "biri", "birkac", "birlikte", "biriyle", "biz", "bize", "bizi", "bizim", "bu", "buna",
-    "bunda", "bundan", "bunu", "bunun", "burada", "boyle", "butun", "cok", "cunku", "da", "daha",
-    "dahi", "de", "defa", "degil", "demek", "diye", "dolayi", "dogru", "durum", "elbette", "en",
-    "esas", "fakat", "falan", "filan", "gerek", "gerekli", "gibi", "gore", "ha", "hala", "hani",
-    "hatta", "hem", "hep", "hepsi", "her", "hic", "icin", "icinde", "iken", "ile", "ilgili", "ise",
-    "iste", "itibaren", "kadar", "karsi", "kendi", "kez", "ki", "kim", "kimi", "kimse", "mi",
-    "mu", "mu", "nasil", "ne", "neden", "nerede", "nereye", "nihayet", "olarak", "oldu", "oldugu",
-    "olmak", "olsa", "olsun", "olup", "onu", "onun", "orada", "oyle", "pek", "ragmen", "sadece",
-    "sanki", "sayet", "sey", "simdi", "su", "suna", "sunu", "sonra", "tabii", "tam", "tum", "uzere",
-    "var", "ve", "veya", "ya", "yahut", "yani", "yerine", "yine", "yok", "zaten", "zira",
-    "the", "and", "for", "from", "into", "that", "this", "with", "your", "have", "were", "they",
-    "them", "their", "there", "then", "than", "when", "what", "which", "will", "would", "about",
-    "just", "over", "more", "some", "such", "very", "been", "being", "also", "here", "keep", "hold",
-    "not", "you", "our", "out", "all", "way"
+    "bircok", "biri", "birkac", "birlikte", "biz", "bize", "bizi", "bizim", "bu", "buna", "bunda",
+    "bundan", "bunu", "bunun", "burada", "boyle", "butun", "cok", "cunku", "daha", "dahi", "defa",
+    "degil", "demek", "diye", "dogru", "elbette", "elbet", "en", "esas", "fakat", "gibi", "gore", "hala",
+    "hatta", "hem", "hep", "her", "hic", "icin", "icinde", "iken", "ile", "ilgili", "ise", "iste",
+    "itibaren", "kadar", "karsi", "kendi", "kez", "ki", "kim", "kimi", "kimse", "mi", "mu", "ne",
+    "neden", "nerede", "nereye", "nihayet", "olarak", "oldu", "oldugu", "olmak", "olsa", "olsun",
+    "olup", "onu", "onun", "orada", "oyle", "pek", "ragmen", "sadece", "sanki", "sayet", "sey",
+    "simdi", "sonra", "su", "tabii", "tam", "tum", "ustune", "uzere", "vakit", "vaktiyle", "var", "ve", "veya", "yahut", "yani",
+    "yerine", "yine", "yok", "zaten", "zira", "the", "and", "for", "from", "into", "that", "this",
+    "with", "your", "have", "were", "they", "them", "their", "there", "then", "than", "when", "what",
+    "which", "will", "would", "about", "just", "over", "more", "some", "such", "very", "been", "being",
+    "also", "here", "not", "you", "our", "out", "all", "way", "derken", "misali", "lakin", "gerek", "kulak"
   ]);
 
-  const weakTerms = new Set([
-    "arada", "arasında", "artik", "aslinda", "bazen", "belki", "çoktan", "dair", "defa", "derken",
-    "elbette", "elinden", "esasen", "evvela", "galiba", "halde", "haliyle", "henuz", "icinden",
-    "itibariyla", "kendi", "lakin", "mesela", "nihayet", "nispetle", "orada", "oteye", "pek",
-    "sirf", "şimdi", "sipsak", "sozumona", "tabii", "tamamen", "vakit", "vaktiyle", "yalniz",
-    "yegane", "yine", "zaten", "zira", "uzere", "ustelik", "kanaat", "getirmiş", "misali",
-    "kalem", "kaleme", "kulak", "nezdinde", "hayli", "dogrusu", "nihai", "bizzat",
-    "değil", "için", "olan", "olmak", "etmek", "etme", "olma", "misa", "aras", "ahal", "şimd", "elin"
+  const blocked = new Set([
+    "baki", "resul", "besir", "fuad", "ihsan", "oktay", "anar", "linguafraudator", "prosecutor",
+    "franca", "kukla", "kuklaci", "sir", "mr", "mrs", "allah", "yankee", "globemaster", "berlin",
+    "ankara", "moskova", "ruslar", "ukrayna", "fransa", "davos", "negev", "muhterem"
   ]);
 
-  const blockedTerms = new Set([
-    "baki", "resul", "besir", "fuad", "muhterem", "ihsan", "oktay", "anar", "bey",
-    "linguafraudator", "prosecutor", "franca", "rahmetli", "efendiler", "kulunuz", "bendeniz",
-    "adamcagiz", "adamcagizin", "zavallim", "zavallimcagiz", "okurlarim", "dostunuz", "ahali",
-    "et", "ol"
-  ]);
-
-  const unigramCounts = new Map<string, number>();
-  const unigramDocCounts = new Map<string, number>();
-  const phraseCounts = new Map<string, number>();
-  const phraseDocCounts = new Map<string, number>();
+  const counts = new Map<string, number>();
+  const docCounts = new Map<string, number>();
+  const labels = new Map<string, string>();
 
   for (const entry of entries) {
-    const originalSource = [
-      entryTitle(entry),
-      entry.data.description ?? "",
-      entry.body ?? "",
-      entry.data.tags.join(" ")
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    const dynamicNameTerms = extractNameTerms(originalSource, entry.data.tags);
-
-    const weightedSource = [
+    const source = [
       entryTitle(entry),
       entryTitle(entry),
       entry.data.description ?? "",
@@ -205,72 +180,54 @@ export function tagCloud(entries: JournalEntry[]) {
       .filter(Boolean)
       .join(" ");
 
-    const tokens = tokenizeKeywords(weightedSource)
-      .filter((token) => !unigramStopwords.has(token))
-      .filter((token) => !weakTerms.has(token))
-      .filter((token) => !blockedTerms.has(token))
-      .filter((token) => !dynamicNameTerms.has(token))
-      .filter((token) => token.length >= 4);
+    const rawTokens = source.match(/\p{L}[\p{L}'’-]{2,}/gu) ?? [];
+    const seen = new Set<string>();
 
-    const phrases = buildCandidatePhrases(tokens)
-      .filter((phrase) => !hasBlockedWord(phrase, blockedTerms))
-      .filter((phrase) => !hasWeakWord(phrase, weakTerms))
-      .filter((phrase) => !isNameHeavyPhrase(phrase, dynamicNameTerms))
-      .filter((phrase) => !isWeakPhrase(phrase));
+    for (const rawToken of rawTokens) {
+      const concept = normalizeConceptCandidate(rawToken);
+      if (!concept) continue;
 
-    const seenTokens = new Set<string>();
-    const seenPhrases = new Set<string>();
+      const simple = simplifyTokenForFilter(concept.key);
+      if (stopwords.has(simple)) continue;
+      if (blocked.has(simple)) continue;
+      if (isNarrativeVerbStem(concept.key)) continue;
+      if (isRelationalFiller(concept.key)) continue;
+      if (simple.length < 4) continue;
 
-    for (const token of tokens) {
-      unigramCounts.set(token, (unigramCounts.get(token) ?? 0) + 1);
-      if (!seenTokens.has(token)) {
-        unigramDocCounts.set(token, (unigramDocCounts.get(token) ?? 0) + 1);
-        seenTokens.add(token);
-      }
-    }
+      counts.set(concept.key, (counts.get(concept.key) ?? 0) + 1);
+      labels.set(concept.key, concept.display);
 
-    for (const phrase of phrases) {
-      phraseCounts.set(phrase, (phraseCounts.get(phrase) ?? 0) + 1);
-      if (!seenPhrases.has(phrase)) {
-        phraseDocCounts.set(phrase, (phraseDocCounts.get(phrase) ?? 0) + 1);
-        seenPhrases.add(phrase);
+      if (!seen.has(concept.key)) {
+        docCounts.set(concept.key, (docCounts.get(concept.key) ?? 0) + 1);
+        seen.add(concept.key);
       }
     }
   }
 
-  const unigramItems = [...unigramCounts.entries()]
-    .map(([tag, count]) => {
-      const docs = unigramDocCounts.get(tag) ?? 1;
+  const items = [...counts.entries()]
+    .map(([key, count]) => {
+      const docs = docCounts.get(key) ?? 1;
+      const score = count + docs * 4 + conceptBoost(key, count, docs) + (docs === 1 && count >= 8 ? 4 : 0);
       return {
-        tag,
+        key,
+        tag: labels.get(key) ?? key,
         count,
         docs,
-        score: count + docs * 3
+        score
       };
     })
-    .filter((item) => item.docs >= 2 && item.count >= 4)
-    .filter((item) => !weakTerms.has(item.tag));
-
-  const phraseItems = [...phraseCounts.entries()]
-    .map(([tag, count]) => {
-      const docs = phraseDocCounts.get(tag) ?? 1;
-      return {
-        tag,
-        count,
-        docs,
-        score: count * (tag.split(" ").length === 3 ? 3.25 : 2.8) + docs * 3.8
-      };
+    .filter((item) => (item.docs >= 3 && item.count >= 3) || item.count >= 6)
+    .filter((item) => {
+      const excluded = new Set([
+        "değil", "şimdi", "artık", "olan", "kuklacı", "beşir", "bendeniz", "geldi",
+        "çoktan", "üstüne", "arasında", "dünyanın", "fuadın", "muhterem", "vaktiyle",
+        "misali", "derken", "etme", "olma", "kulak", "lakin", "gerek", "elinden",
+        "dair", "hakika", "hâliyle", "hayale", "verdim", "bütünüyle", "dışarı",
+        "kaleme", "kanaat", "kendini"
+      ]);
+      return !excluded.has(item.tag);
     })
-    .filter((item) => item.docs >= 2 && item.count >= 2);
-
-  const items = [...phraseItems, ...unigramItems]
     .sort((a, b) => b.score - a.score || b.count - a.count || a.tag.localeCompare(b.tag, "tr"))
-    .filter((item, index, list) => {
-      return !list.some((other, otherIndex) => {
-        if (otherIndex >= index) return false;
-        return other.tag.includes(item.tag) && other.tag !== item.tag;
-      });
-    })
     .slice(0, 18);
 
   const max = items[0]?.score ?? 1;
@@ -290,10 +247,10 @@ function normalizeForMatch(value: string) {
     .normalize("NFC")
     .toLocaleLowerCase("tr-TR")
     .replace(/['’`"]/g, "")
-    .replace(/â/g, "a")
-    .replace(/î/g, "i")
-    .replace(/û/g, "u")
-    .replace(/[^a-z0-9çğıöşü\s-]/g, " ");
+    .replace(/\u00e2/g, "a")
+    .replace(/\u00ee/g, "i")
+    .replace(/\u00fb/g, "u")
+    .replace(/[^\p{L}0-9\s-]/gu, " ");
 }
 
 function tokenizeKeywords(source: string) {
@@ -311,9 +268,9 @@ function normalizeTurkishToken(token: string) {
   const suffixes = [
     "lerinizden", "larinizdan", "lerinizde", "larinizda", "lerinden", "larindan",
     "lerimiz", "larimiz", "lerden", "lardan", "lerde", "larda", "lerin", "larin",
-    "lere", "lara", "deki", "daki", "teki", "taki", "ligin", "lığın", "luğun",
-    "lüğün", "liği", "lığı", "luğu", "lüğü", "lik", "lık", "luk", "lük",
-    "maktan", "mekten", "makta", "mekte", "masi", "mesi", "mayi", "meyi", "mak", "mek"
+    "lere", "lara", "deki", "daki", "teki", "taki", "ligin", "ligi", "lugu", "lugu",
+    "lik", "lik", "luk", "luk", "maktan", "mekten", "makta", "mekte", "masi", "mesi",
+    "mayi", "meyi", "mak", "mek"
   ];
 
   const suffix = suffixes.find((item) => value.endsWith(item) && value.length - item.length >= 4);
@@ -321,15 +278,130 @@ function normalizeTurkishToken(token: string) {
     value = value.slice(0, -suffix.length);
   }
 
+  const patternSuffixes = [
+    /(?:t|d)(?:a|e)y?(?:ken|im|\u0131m|um|\u00fcm|sin|s\u0131n|sun|s\u00fcn|iz|\u0131z|uz|\u00fcz|dir|d\u0131r|dur|d\u00fcr|dim|d\u0131m|dum|d\u00fcm|tim|t\u0131m|tum|t\u00fcm|dik|d\u0131k|duk|d\u00fck|ler|lar)$/u,
+    /(?:t|d)(?:a|e)$/u,
+    /(?:y)?(?:dim|d\u0131m|dum|d\u00fcm|tim|t\u0131m|tum|t\u00fcm|dik|d\u0131k|duk|d\u00fck|ken)$/u,
+    /(?:y)?(?:im|\u0131m|um|\u00fcm|sin|s\u0131n|sun|s\u00fcn|iz|\u0131z|uz|\u00fcz)$/u
+  ];
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const pattern of patternSuffixes) {
+      const next = value.replace(pattern, "");
+      if (next !== value && next.length >= 4) {
+        value = next;
+        changed = true;
+        break;
+      }
+    }
+  }
+
+  const verbLikeSuffixes = [
+    /(?:d|t)(?:i|\u0131|u|\u00fc)$/u,
+    /(?:m|n|k)?(?:s|y)?(?:m\u0131s|mis|mus|m\u00fcs|m\u0131\u015f|mi\u015f|mu\u015f|m\u00fc\u015f)$/u,
+    /(?:yor)$/u
+  ];
+
+  for (const pattern of verbLikeSuffixes) {
+    const next = value.replace(pattern, "");
+    if (next !== value && next.length >= 4) {
+      value = next;
+    }
+  }
+
   if (value.endsWith("g") && value.length > 4) {
     value = `${value.slice(0, -1)}k`;
   }
 
-  if (value.endsWith("gı") || value.endsWith("gi") || value.endsWith("gu") || value.endsWith("gü")) {
+  if (value.endsWith(`g\u0131`) || value.endsWith("gi") || value.endsWith("gu") || value.endsWith(`g\u00fc`)) {
     value = `${value.slice(0, -1)}k`;
   }
 
   return value;
+}
+
+function simplifyTokenForFilter(token: string) {
+  return normalizeForMatch(token)
+    .replace(/\u00e7/g, "c")
+    .replace(/\u011f/g, "g")
+    .replace(/\u0131/g, "i")
+    .replace(/\u00f6/g, "o")
+    .replace(/\u015f/g, "s")
+    .replace(/\u00fc/g, "u")
+    .replace(/\s+/g, "");
+}
+
+function normalizeConceptCandidate(rawToken: string) {
+  const base = rawToken
+    .normalize("NFC")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/^[^-\p{L}]+|[^-\p{L}]+$/gu, "")
+    .replace(/['’`-]+/g, "");
+
+  if (base.length < 4) return null;
+
+  let display = base;
+  const patterns = [
+    /^(.*?)(?:t|d)(?:a|e)y?(?:im|\u0131m|um|\u00fcm|sin|s\u0131n|sun|s\u00fcn|iz|\u0131z|uz|\u00fcz|ydim|yd\u0131m|ydum|yd\u00fcm|yken|dir|d\u0131r|dur|d\u00fcr)$/u,
+    /^(.*?)(?:d|t)(?:i|\u0131|u|\u00fc)(?:m|n|k|ler|lar)?$/u,
+    /^(.*?)(?:m\u0131\u015f|mi\u015f|mu\u015f|m\u00fc\u015f)$/u,
+    /^(.*?)(?:lar|ler)$/u
+  ];
+
+  for (const pattern of patterns) {
+    const match = display.match(pattern);
+    if (match?.[1] && match[1].length >= 4) {
+      display = match[1];
+    }
+  }
+
+  const key = display.normalize("NFC");
+  return { key, display: key };
+}
+
+
+function isNarrativeVerbStem(token: string) {
+  const simplified = simplifyTokenForFilter(token);
+  const blockedRoots = new Set([
+    "de", "di", "soyle", "ver", "verd", "kal", "yap", "bak", "gel", "geld", "git", "al",
+    "et", "ol", "isit", "gor", "izle", "iste", "bil", "san", "bul", "dinle",
+    "ogren", "takil", "acil", "kapan", "cik", "cevir", "seyret", "ded", "anla", "etme", "olma", "ettim"
+  ]);
+
+  return blockedRoots.has(simplified);
+}
+
+function isRelationalFiller(token: string) {
+  const simplified = simplifyTokenForFilter(token);
+  return ["arasin", "arasi", "arasinda", "arasindan", "arasina"].includes(simplified);
+}
+
+function conceptBoost(tag: string, count: number, docs: number) {
+  const simplified = simplifyTokenForFilter(tag);
+  let boost = 0;
+
+  if (count >= 6) boost += 2;
+  if (count >= 10) boost += 2;
+  if (tag.length >= 6) boost += 0.8;
+  if (docs >= 2) boost += 0.6;
+
+  if (
+    simplified.endsWith("lik") ||
+    simplified.endsWith("luk") ||
+    simplified.endsWith("culuk") ||
+    simplified.endsWith("sizlik") ||
+    simplified.endsWith("cilik") ||
+    simplified.endsWith("iyet") ||
+    simplified.endsWith("izm") ||
+    simplified.endsWith("krit") ||
+    simplified.endsWith("tecrit")
+  ) {
+    boost += 1.8;
+  }
+
+  return boost;
 }
 
 function buildCandidatePhrases(tokens: string[]) {
@@ -368,7 +440,7 @@ function isNameHeavyPhrase(phrase: string, nameTerms: Set<string>) {
 
 function extractNameTerms(source: string, tags: string[]) {
   const names = new Set<string>();
-  const titleCaseWords = source.normalize("NFC").match(/\b[A-ZÇĞİÖŞÜ][a-zçğıöşüâîû]+(?:['’][A-ZÇĞİÖŞÜa-zçğıöşüâîû]+)?\b/g) ?? [];
+  const titleCaseWords = source.normalize("NFC").match(/\b\p{Lu}[\p{L}\u00e2\u00ee\u00fb]+(?:['’][\p{Lu}\p{L}\u00e2\u00ee\u00fb]+)?\b/gu) ?? [];
 
   for (const word of titleCaseWords) {
     const token = normalizeTurkishToken(normalizeForMatch(word).trim());

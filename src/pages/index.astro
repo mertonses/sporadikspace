@@ -24,9 +24,10 @@ const hasTags = tags.length > 0;
       <section class="terminal-block" aria-labelledby="latest-heading">
         <div class="section-head">
           <h1 id="latest-heading" class="screen-title" data-i18n="home_latest">LATEST ENTRIES</h1>
-          <a class="terminal-link" href="/rss.xml">rss.xml</a>
+          <a class="terminal-link home-rss-link home-rss-link-desktop" href="/rss.xml">rss.xml</a>
         </div>
         <EntryList entries={latestEntries} showDescription={true} />
+        <a class="terminal-link home-rss-link home-rss-link-mobile" href="/rss.xml">rss.xml</a>
       </section>
 
       <section class="terminal-block" aria-labelledby="archive-heading">

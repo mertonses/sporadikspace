@@ -45,7 +45,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
         </div>
 
         <div class="admin-inline admin-toolbar">
-          <p class="terminal-line admin-status" data-admin-status>oturum hazir.</p>
           <div class="admin-toolbar-actions">
             <button class="provider-pill admin-button-quiet" type="button" data-admin-reset-form data-i18n="admin_new">yeni</button>
           </div>
@@ -232,7 +231,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
 <script is:inline define:vars={{ today, nowLocal }}>
   (() => {
-    const storageKey = "sporadikspace-admin-draft-v4";
+    const storageKey = "sporadikspace-admin-draft-v5";
     const shell = document.querySelector("[data-admin-shell]");
     const authBlock = document.querySelector("[data-admin-auth]");
     const panel = document.querySelector("[data-admin-panel]");
@@ -241,7 +240,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     const resetFormButton = document.querySelector("[data-admin-reset-form]");
     const form = document.querySelector("[data-admin-form]");
     const feedback = document.querySelector("[data-admin-feedback]");
-    const status = document.querySelector("[data-admin-status]");
     const submitButton = document.querySelector("[data-admin-submit]");
     const clearDraftButton = document.querySelector("[data-admin-clear-draft]");
     const scheduleWrap = document.querySelector("[data-admin-schedule-wrap]");
@@ -304,7 +302,6 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
     function setAuthenticated(authenticated) {
       authBlock.hidden = authenticated;
       panel.hidden = !authenticated;
-      status.textContent = authenticated ? "oturum hazir." : "locked.";
       shell.dataset.adminReady = authenticated ? "true" : "false";
       setMessage("");
     }
@@ -458,6 +455,7 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
 
     function resetFormState(preservePublishResult = false) {
       suppressDraftWrite = true;
+      localStorage.removeItem(storageKey);
       form.reset();
       fields.originalPath.value = "";
       fields.existingCoverImage.value = "";
@@ -735,8 +733,8 @@ const nowLocal = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${part
       setMessage("publishing...");
       submitButton.disabled = true;
       try {
-        const formData = new FormData(form);
         syncPublishMode();
+        const formData = new FormData(form);
         formData.set("removeCoverImage", formData.get("removeCoverImage") ? "true" : "false");
         formData.set("status", fields.status.value);
         formData.set("publishAt", fields.publishAt.value);
