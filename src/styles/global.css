@@ -796,6 +796,10 @@ img {
   gap: 1rem;
 }
 
+.admin-panel {
+  position: relative;
+}
+
 .admin-auth[hidden],
 .admin-panel[hidden],
 .admin-tab-panel[hidden] {
@@ -840,6 +844,10 @@ img {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
+  position: absolute;
+  top: -4.35rem;
+  right: 0;
+  justify-content: flex-end;
 }
 
 .admin-tabs .provider-pill {
@@ -1820,6 +1828,11 @@ figure figcaption {
 
   .admin-tabs .provider-pill {
     flex: 1 1 calc(50% - 0.55rem);
+  }
+
+  .admin-tabs {
+    position: static;
+    justify-content: flex-start;
   }
 
   .admin-feedback {
