@@ -33,7 +33,7 @@ Ki diyebilsin insanlar yıkımın ötesindeki, "<i>Here was the man!</i>" <br>
 Ki kavuşsun ebedîyete silüetim, insanı gibi fâni olan şehrin duvarlarındaki<br>
 Ki bilinsin, sığındım sanatın kubbesine, göklerin yerleri küle çeviren yağmuru dinmezken
 
-Ey Öte Dünya'dan okuyan! It is a farewell<br>
+Ey Öte Dünya'dan okuyan! It is a farewell!<br>
 Nedir eden cereyan, sualine el-cevab: <br>
 Yerküre zifirî siyah, vâki oldu vakt-i mahşer<br>
 Olunca cebre teslim naçizane bedenim, kesildi deveran-ı dem bir an<br>
