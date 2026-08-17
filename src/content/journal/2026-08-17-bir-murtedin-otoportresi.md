@@ -37,6 +37,6 @@ Ey Öte Dünya'dan okuyan! It is a farewell<br>
 Nedir eden cereyan, sualine el-cevab: <br>
 Yerküre zifirî siyah, vâki oldu vakt-i mahşer<br>
 Olunca cebre teslim naçizane bedenim, kesildi deveran-ı dem bir an<br>
-"<i>Bir Mürtedin Otoportresi</i>, imza: <i>Islamic State</i>" <br>
+"<i>Bir Mürtedin Otoportresi</i>", imza: <i>Islamic State</i><br>
 Kerpiç duvarda emaneten duran akrilikten verildi ferman<br>
 It was a farewell! Your humblest servant, <i>a beheaded apostate</i>
