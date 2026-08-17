@@ -1,7 +1,7 @@
 ---
 title: "Bir Mürtedin Otoportresi"
 date: "2026-08-17"
-description: ""
+description: "Deyrizor'da evden firar ettiğim o gece"
 coverImage: "/images/posts/bir-murtedin-otoportresi/cover.jpg"
 coverFocusX: 0
 coverFocusY: 0
