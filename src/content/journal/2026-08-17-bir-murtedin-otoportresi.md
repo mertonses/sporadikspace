@@ -15,7 +15,7 @@ draft: false
 status: "published"
 ---
 
-Deyrizor'da evden firar ettiğim o gece
+Deyrizor'da evden firar ettiğim o gece<br>
 Çekilmişti Fırat'ın suları, bunu fark ettim
 Ne vakit, sualine el-cevab:
 It was, or was it, twenty fourteen
