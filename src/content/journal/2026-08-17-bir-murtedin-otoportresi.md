@@ -23,7 +23,7 @@ Ve sokaklarda idim ben sinsice<br>
 Evvelki sabah duvara nakşettiğim otoportreyi fotoğraflamaktı niyetim
 
 "<i>I am being punished by Him!</i>", I thought, as I was being sneaky<br>
-Beyaza büründü nevzuhur hiçlik birden, and vast it was<br>
+Beyaza büründü nevzuhur hiçlik birden, and vast, vast it was<br>
 Seçtim farlarından: boyası tirfillenmiş eski bir Suzuki<br>
 Kavradı kolumdan beni selefi bir ikonoklast
 
