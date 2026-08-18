@@ -25,7 +25,7 @@ Evvelki sabah duvara nakşettiğim otoportreyi fotoğraflamaktı niyetim
 "<i>I am being punished by Him!</i>", I thought, as I was being sneaky<br>
 Beyaza büründü nevzuhur hiçlik birden, and vast, vast it was<br>
 Seçtim farlarından: boyası tirfillenmiş eski bir Suzuki<br>
-Kavradı kolumdan beni selefi bir ikonoklast
+Derken kavradı beni kolumdan, selefi bir ikonoklast
 
 Niçin, sualine el-cevab: <br>
 Gecenin mehtabında basmaktı deklanşöre, berrak tasarı zihnimdeki<br>
