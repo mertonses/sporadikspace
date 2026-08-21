@@ -36,6 +36,6 @@ Düşünülecek diye beklerken, gereği düşünülmüştü çoktan<br>
 
 Reddiye! İkinci bir şans hakkımdır, demek isterdim Bay Hâkim<br>
 Küllerimden yeniden oluma yükümlüyüm bir ikindi vakti<br>
-Mâhkum isem şayet, ne hakla, bu cüret ne ve bu, bunlar kim<br>
+Mahkûm isem şayet, ne hakla, bu cüret ne ve bu, bunlar kim<br>
 Tahammülümün suları çekilmişken salondaki yansıma dahi<br>
 <i>Söylesene Boriska</i>, çanlar gene çalacak mı dersin?
