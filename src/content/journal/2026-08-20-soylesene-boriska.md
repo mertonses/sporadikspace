@@ -16,7 +16,7 @@ status: "published"
 
 İdrak! Gün ışığı zebra perdelerden ediyordu buyur içeri<br>
 Yerimdeydim, sıfatım, sıfatım öteden belli<br>
-Gözüme ilişen, yerlerinde onbaşılar, erleri<br>
+Gözüme ilişen, yerlerinde jandarmalar, erleri<br>
 Ve onparmak yazan meşhur zabıt kâtibi, F klavyeli
 
 Tarafımdan hakikate bir reddiye, tam vakti<br>
