@@ -14,15 +14,15 @@ draft: false
 status: "published"
 ---
 
-Mazgalların karlarla kaplandığı günde müjdelendi ışıkların söneceği<br>
+Mazgalların karla kaplandığı günde müjdelendi ışıkların söneceği<br>
 Işıklar sönecek ve kusurlara kapkara bir örtü çekilecekti<br>
 Işıklar sönecek ve bir çift göz ötekini görmeyecekti<br>
 Işıklar sönecek ve körler hayat terazisinde denk hissedecekti<br>
 Işıklar sönecek ve Galata'dan seyre dalınan enginlik zifiriye meyledecekti<br>
 
-İki kanatlı kapıları alt edip vakt-i erkenden<br>
-Galata'nın tepesine düzenbazca tünekledim<br>
-Nam-ı diğer ikazdinlemez ben<br>
+Nam-ı diğer <i>ikazdinlemez</i> ben<br>
+Tünekledim düzenbazca Galata'nın tepesine<br>
+Hem de iki kanatlı kapıları alt edip vakt-i erkenden<br>
 Heyhat! Karların hudutbilmez beyazı kusurlara örtüydü zaten<br>
 Göz gözü zaten görmüyordu istilacı tipiden<br>
 Ve hayattan tek alacaklı körler değildi<br>
@@ -32,7 +32,7 @@ Kabahatli idiysem de suçumu ilkin ettim inkâr<br>
 Eyvah! Ceket cebimdeki sökük menteşeler, delil yeterli<br>
 Geçti artık iş işten! Biçare ben etse ne fayda ikrar<br>
 Sorumlu tutulsam trafoların tamirinden<br>
-Bu ceza halk nezdinde yeter mi?<br>
+Bu bedel halk nezdinde yeter mi?<br>
 
 "Yetmez!" yankılandı sanki hep bir ağızdan<br>
 Yankılanmadıysa niçin altıma bir seçim arabası tahsis edildi?<br>
