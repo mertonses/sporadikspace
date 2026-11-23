@@ -1,55 +1,228 @@
 ---
 import { getCollection } from "astro:content";
-import EntryList from "../components/EntryList.astro";
-import TagCloud from "../components/TagCloud.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { publishedEntries, tagCloud, yearlyCounts } from "../lib/journal";
+import { entryDate, entryTitle, entryUrl, formatDate, publishedEntries, stripMarkdown } from "../lib/journal";
 
-const entries = publishedEntries(await getCollection("journal"));
-const latestEntries = entries.slice(0, 10);
-const archiveCounts = yearlyCounts(entries);
-const tags = tagCloud(entries);
-const hasTags = tags.length > 0;
+const entries = publishedEntries(await getCollection("journal")).slice(0, 10);
+const feed = await Promise.all(entries.map(async (entry) => {
+  const body = entry.body?.trim() ?? "";
+  const excerptBlock = body.split(/\r?\n\s*\r?\n/)
+    .filter((block) => !/^\s*(?:!\[|<(?:figure|img|iframe)\b)/i.test(block))
+    .find((block) => stripMarkdown(block));
+  const excerptHtml = (excerptBlock ?? entry.data.description ?? "")
+    .split(/<br\s*\/?>/gi)
+    .map(stripMarkdown)
+    .filter(Boolean)
+    .slice(0, 5)
+    .join("<br />");
+
+  return {
+    date: entryDate(entry),
+    title: entryTitle(entry),
+    url: entryUrl(entry),
+    coverImage: entry.data.coverImage,
+    coverAlt: entry.data.coverAlt || entryTitle(entry),
+    coverPosition: `${entry.data.coverFocusX ?? 50}% ${entry.data.coverFocusY ?? 50}%`,
+    excerptHtml
+  };
+}));
 ---
 
 <BaseLayout>
-  <div class:list={["home-grid", { "no-sidebar": !hasTags }]}>
-    <div class="home-main">
-      <section class="terminal-block">
-        <p class="boot-line" data-i18n="home_boot_1">&gt; booting sporadikspace...</p>
-        <p class="boot-line" data-i18n="home_boot_2">&gt; loading journal index...</p>
-        <p class="boot-line" data-i18n="home_boot_3">&gt; ready.</p>
-      </section>
-
-      <section class="terminal-block" aria-labelledby="latest-heading">
-        <div class="section-head">
-          <h1 id="latest-heading" class="screen-title" data-i18n="home_latest">LATEST ENTRIES</h1>
-          <a class="terminal-link home-rss-link home-rss-link-desktop" href="/rss.xml">rss.xml</a>
-        </div>
-        <EntryList entries={latestEntries} showDescription={true} />
-        <a class="terminal-link home-rss-link home-rss-link-mobile" href="/rss.xml">rss.xml</a>
-      </section>
-
-      <section class="terminal-block" aria-labelledby="archive-heading">
-        <h2 id="archive-heading" class="screen-title" data-i18n="home_archive">ARCHIVE</h2>
-        <ul class="archive-index" role="list">
-          {
-            archiveCounts.map(({ year, count }) => (
-              <li>
-                <a href={`/archive#year-${year}`}>{year} ({count})</a>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
+  <section class="journal-feed" aria-label="Journal" data-i18n-aria-label="home_feed">
+    <div class="feed-intro">
+      <h1 data-i18n="home_feed">journal</h1>
+      <span>{entries.length} yazı</span>
     </div>
-
-    {
-      hasTags && (
-        <div class="home-sidebar">
-          <TagCloud items={tags} />
+    <div class="feed-grid">
+    {feed.map(({ date, title, url, coverImage, coverAlt, coverPosition, excerptHtml }, index) => (
+      <article class:list={["feed-entry", { "feed-entry-featured": index === 0 }]}>
+        {coverImage && (
+          <a class="feed-cover" href={url} aria-label={title}>
+            <img
+              src={coverImage}
+              alt={coverAlt}
+              loading={index === 0 ? "eager" : "lazy"}
+              fetchpriority={index === 0 ? "high" : undefined}
+              decoding="async"
+              style={`object-position:${coverPosition};`}
+            />
+          </a>
+        )}
+        <div class="feed-copy">
+          <header>
+          <time datetime={date.toISOString()} data-localize-date="plain" data-date-iso={date.toISOString()}>
+            {formatDate(date)}
+          </time>
+          <h2><a href={url}>{title}</a></h2>
+          </header>
+          <div class="post-body feed-body" set:html={excerptHtml}></div>
+          <a class="feed-link" href={url} data-i18n="home_continue">Continue reading</a>
         </div>
-      )
-    }
-  </div>
+      </article>
+    ))}
+    </div>
+    <a class="feed-link feed-archive" href="/archive" data-i18n="home_all">Browse the archive</a>
+  </section>
 </BaseLayout>
+
+<style>
+  .journal-feed {
+    max-width: none;
+    margin-block: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .feed-intro {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .feed-intro h1 {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: lowercase;
+  }
+
+  .feed-intro span {
+    color: var(--muted);
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+  }
+
+  .feed-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(3rem, 7vw, 5rem) clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .feed-entry {
+    min-width: 0;
+  }
+
+  .feed-entry-featured {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.8fr);
+    grid-column: 1 / -1;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: end;
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 1px solid var(--line);
+  }
+
+  time {
+    color: var(--text-secondary);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  h2 {
+    margin: 0.5rem 0 0.85rem;
+    color: var(--text);
+    font-family: var(--font-reading);
+    font-size: clamp(1.5rem, 3.3vw, 2.15rem);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.14;
+    overflow-wrap: anywhere;
+  }
+
+  h2 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  h2 a:hover, h2 a:focus-visible {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .feed-cover {
+    display: block;
+    aspect-ratio: 4 / 3;
+    margin: 0 0 1.25rem;
+    overflow: hidden;
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    text-decoration: none;
+  }
+
+  .feed-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: filter 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .feed-cover:hover img,
+  .feed-cover:focus-visible img {
+    filter: contrast(1.04);
+  }
+
+  .feed-entry-featured .feed-cover {
+    aspect-ratio: 16 / 10;
+    margin: 0;
+  }
+
+  .journal-feed .feed-body {
+    max-width: 65ch;
+    margin: 0;
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 1rem;
+    line-height: 1.65;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .feed-body > :global(p:first-of-type) {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .feed-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--accent);
+    font-family: var(--font-ui);
+    font-size: 0.9375rem;
+    text-underline-offset: 0.2em;
+  }
+
+  .feed-archive {
+    margin-top: 4rem;
+  }
+
+  @media (max-width: 760px) {
+    .journal-feed {
+      margin-block: 2rem 3rem;
+    }
+
+    .feed-grid,
+    .feed-entry-featured {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .feed-entry-featured .feed-cover {
+      margin-bottom: 1.25rem;
+    }
+
+    .feed-grid {
+      row-gap: 3rem;
+    }
+
+    .feed-entry-featured {
+      padding-bottom: 3rem;
+    }
+  }
+</style>
